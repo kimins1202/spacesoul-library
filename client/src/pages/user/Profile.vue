@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-2xl mx-auto">
+  <div class="p-4 sm:p-6 max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold text-[#1f3728] mb-6">Hồ sơ cá nhân</h1>
 
     <div v-if="isLoading" class="flex items-center justify-center py-16 text-gray-400 gap-2">
@@ -8,7 +8,7 @@
 
     <div v-else class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
       <!-- Avatar header -->
-      <div class="bg-gradient-to-r from-[#1f3728] to-[#344d3d] px-8 py-8 flex items-center gap-5">
+      <div class="bg-gradient-to-r from-[#1f3728] to-[#344d3d] px-5 sm:px-8 py-6 sm:py-8 flex items-center gap-4 sm:gap-5">
         <div class="w-16 h-16 rounded-full bg-white/20 text-white flex items-center justify-center text-2xl font-bold shadow-inner">
           {{ profile?.firstName?.charAt(0)?.toUpperCase() || '?' }}
         </div>
@@ -24,7 +24,7 @@
       <div class="p-6">
         <!-- View mode -->
         <div v-if="!isEditing" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Họ lót</p>
               <p class="text-sm font-medium text-gray-800">{{ profile?.lastName || '—' }}</p>
@@ -38,7 +38,7 @@
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email</p>
             <p class="text-sm font-medium text-gray-800">{{ profile?.email || '—' }}</p>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Số điện thoại</p>
               <p class="text-sm font-medium text-gray-800">{{ profile?.phone || '—' }}</p>
@@ -69,7 +69,7 @@
           <div v-if="saveError" class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{{ saveError }}</div>
           <div v-if="saveSuccess" class="p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">Cập nhật thành công!</div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Họ lót</label>
               <input v-model="editData.lastName" type="text" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1f3728]" />
@@ -87,7 +87,7 @@
             <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Địa chỉ</label>
             <input v-model="editData.address" type="text" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1f3728]" />
           </div>
-          <div v-if="profile?.type === 'Reader'" class="grid grid-cols-2 gap-4">
+          <div v-if="profile?.type === 'Reader'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Ngày sinh</label>
               <input v-model="editData.birthDate" type="date" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1f3728]" />
@@ -103,7 +103,7 @@
             </div>
           </div>
 
-          <div class="flex gap-3 pt-4 border-t border-gray-100">
+          <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-gray-100">
             <button @click="handleSave" :disabled="isSaving" class="bg-[#1f3728] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#16241c] disabled:opacity-60 flex items-center gap-2 transition-colors">
               <Loader2 v-if="isSaving" class="w-4 h-4 animate-spin" />
               {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}

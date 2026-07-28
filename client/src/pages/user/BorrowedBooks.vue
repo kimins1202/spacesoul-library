@@ -50,8 +50,7 @@
       <div v-else class="borrow-list">
         <article v-for="borrow in filteredBorrows" :key="borrow._id" class="borrow-card">
           <router-link v-if="borrow.book?._id" :to="`/books/${borrow.book._id}`" class="cover">
-            <img v-if="borrow.book.cover" :src="borrow.book.cover" :alt="borrow.book.title" @error="useCoverFallback" />
-            <BookOpen v-else />
+            <BookCover :src="borrow.book.cover" :title="borrow.book.title" :author="borrow.book.author" />
           </router-link>
           <div v-else class="cover"><BookOpen /></div>
 
@@ -104,7 +103,7 @@ import {
   History, Loader2, PackageCheck, Plus, RefreshCw, Undo2, X
 } from 'lucide-vue-next'
 import { borrowService } from '@/services/borrow'
-import { useCoverFallback } from '@/utils/imageFallback'
+import BookCover from '@/components/books/BookCover.vue'
 
 const myBorrows = ref([])
 const isLoading = ref(false)
@@ -236,7 +235,7 @@ onMounted(loadMyBorrows)
 .borrow-list { padding: 16px; display: grid; gap: 12px; background: #f8f8f4; }
 .borrow-card { padding: 16px; display: flex; gap: 18px; border: 1px solid #e5e3dc; border-radius: 16px; background: white; transition: .2s ease; }
 .borrow-card:hover { border-color: #cbd5cc; box-shadow: 0 10px 28px rgba(31,55,40,.07); }
-.cover { width: 78px; height: 110px; flex: 0 0 auto; display: grid; place-items: center; overflow: hidden; border-radius: 9px; background: #ecece7; color: #a8afa9; }
+.cover { width: 82px; height: 116px; flex: 0 0 auto; display: grid; place-items: center; overflow: hidden; border: 1px solid #dfe3dc; border-radius: 8px; background: #ecece7; color: #a8afa9; box-shadow: 0 6px 16px rgba(28,52,38,.1); }
 .cover img { width: 100%; height: 100%; object-fit: cover; }
 .cover > svg { width: 28px; }
 .borrow-info { min-width: 0; flex: 1; }
@@ -260,5 +259,5 @@ onMounted(loadMyBorrows)
 .error-state { margin: 20px; padding: 18px; display: flex; align-items: center; gap: 12px; border: 1px solid #ecc9c5; border-radius: 12px; background: #fff3f1; color: #9e4039; }.error-state div{flex:1}.error-state p{font-size:.7rem}.error-state button{padding:8px 10px;border:0;border-radius:8px;background:#9e4039;color:white;font-size:.68rem;font-weight:700}
 .toast { position: fixed; z-index: 100; right: 24px; bottom: 24px; padding: 13px 17px; display: flex; align-items: center; gap: 8px; border-radius: 12px; background: #214c36; color: white; box-shadow: 0 16px 40px rgba(20,50,34,.22); font-size: .75rem; font-weight: 700; }.toast-enter-active,.toast-leave-active{transition:.25s}.toast-enter-from,.toast-leave-to{opacity:0;transform:translateY(10px)}
 @media(max-width:800px){.summary-grid{grid-template-columns:repeat(2,1fr)}.borrow-hero{align-items:flex-start;flex-direction:column}.timeline{grid-template-columns:repeat(2,1fr)}.card-footer{align-items:flex-start;flex-direction:column}.actions{width:100%;flex-wrap:wrap}}
-@media(max-width:560px){.borrow-page{padding:28px 14px 70px}.borrow-hero{padding:24px}.summary-grid{gap:8px}.summary-card{padding:13px}.panel-toolbar{align-items:flex-start;flex-direction:column}.refresh-button{display:none}.borrow-card{gap:12px}.cover{width:62px;height:90px}.book-title-row{flex-direction:column;gap:8px}.status{width:max-content}.timeline{grid-template-columns:1fr 1fr}.actions button,.actions a{flex:1;justify-content:center}}
+@media(max-width:560px){.borrow-page{padding:28px 14px 70px}.borrow-hero{padding:24px}.summary-grid{gap:8px}.summary-card{padding:13px}.panel-toolbar{align-items:flex-start;flex-direction:column}.refresh-button{display:none}.borrow-card{gap:12px}.cover{width:68px;height:98px}.book-title-row{flex-direction:column;gap:8px}.status{width:max-content}.timeline{grid-template-columns:1fr 1fr}.actions button,.actions a{flex:1;justify-content:center}}
 </style>

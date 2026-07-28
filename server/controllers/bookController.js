@@ -1,4 +1,13 @@
 const Book = require("../models/Book");
+const Borrow = require("../models/Borrow");
+const mongoose = require("mongoose");
+
+const isValidId = id => mongoose.isValidObjectId(id);
+const hasValidInventory = ({ totalCopies, availableCopies }) => (
+  Number(totalCopies) >= 0
+  && Number(availableCopies) >= 0
+  && Number(availableCopies) <= Number(totalCopies)
+);
 
 //Lấy danh sách tất cả sách
 const getBooks = async (req, res) => {
@@ -13,6 +22,9 @@ const getBooks = async (req, res) => {
 // Lấy chi tiết 1 cuốn sách theo ID
 const getBookById = async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã sách không hợp lệ" });
+    }
     const book = await Book.findById(req.params.id).populate("publisher");
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
@@ -26,6 +38,11 @@ const getBookById = async (req, res) => {
 //Tạo sách mới
 const createBook = async (req, res) => {
   try {
+    const totalCopies = req.body.totalCopies ?? 1;
+    const availableCopies = req.body.availableCopies ?? totalCopies;
+    if (!hasValidInventory({ totalCopies, availableCopies })) {
+      return res.status(400).json({ message: "Số bản khả dụng phải từ 0 đến tổng số bản" });
+    }
     const book = await Book.create(req.body);
     res.status(201).json({ message: "Đã thêm sách mới thành công", book });
   } catch (error) {
@@ -36,6 +53,18 @@ const createBook = async (req, res) => {
 // Cập nhật sách
 const updateBook = async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã sách không hợp lệ" });
+    }
+    const currentBook = await Book.findById(req.params.id);
+    if (!currentBook) {
+      return res.status(404).json({ message: "Không tìm thấy sách" });
+    }
+    const totalCopies = req.body.totalCopies ?? currentBook.totalCopies;
+    const availableCopies = req.body.availableCopies ?? currentBook.availableCopies;
+    if (!hasValidInventory({ totalCopies, availableCopies })) {
+      return res.status(400).json({ message: "Số bản khả dụng phải từ 0 đến tổng số bản" });
+    }
     const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -52,6 +81,13 @@ const updateBook = async (req, res) => {
 // Xóa sách
 const deleteBook = async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã sách không hợp lệ" });
+    }
+    const hasBorrowHistory = await Borrow.exists({ book: req.params.id });
+    if (hasBorrowHistory) {
+      return res.status(409).json({ message: "Không thể xóa sách đã có lịch sử mượn" });
+    }
     const book = await Book.findByIdAndDelete(req.params.id);
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });

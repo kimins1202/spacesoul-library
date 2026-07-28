@@ -15,7 +15,7 @@
 
     <!-- Table -->
     <div class="overflow-x-auto flex-1">
-      <table class="w-full text-left border-collapse min-w-[1000px]">
+      <table class="book-admin-table w-full text-left border-collapse min-w-[1080px]">
         <thead class="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm shadow-sm">
           <tr class="text-gray-500 text-xs uppercase tracking-wider">
             <th class="px-6 py-4 font-bold border-b border-gray-200">Sách</th>
@@ -24,7 +24,7 @@
             <th class="px-6 py-4 font-bold border-b border-gray-200">Phí mượn / lượt</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Tồn kho</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Trạng thái</th>
-            <th class="px-6 py-4 font-bold text-right border-b border-gray-200">Thao tác</th>
+            <th class="action-column-header px-5 py-4 font-bold text-center border-b border-gray-200">Thao tác</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-sm bg-white">
@@ -32,8 +32,7 @@
             <td class="px-6 py-4">
               <div class="flex items-center gap-4">
                 <div class="w-10 h-14 rounded-md bg-gray-200 overflow-hidden shadow-sm flex-shrink-0">
-                  <img v-if="book.cover" :src="book.cover" class="w-full h-full object-cover">
-                  <div v-else class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Cover</div>
+                  <BookCover :src="book.cover" :title="book.title" :author="book.author" />
                 </div>
                 <div>
                   <p class="font-bold text-[#1f3728] group-hover:text-blue-700 transition-colors cursor-pointer line-clamp-1">{{ book.title }}</p>
@@ -56,10 +55,14 @@
               <span v-if="book.availableCopies > 0" class="bg-green-100/50 border border-green-200 text-green-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">Sẵn có</span>
               <span v-else class="bg-orange-100/50 border border-orange-200 text-orange-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">Đã mượn hết</span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <div class="admin-row-actions flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button @click="openEditModal(book)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><Edit2 class="w-4 h-4" /></button>
-                <button @click="deleteBook(book._id)" class="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><Trash2 class="w-4 h-4" /></button>
+            <td class="action-column-cell px-5 py-4">
+              <div class="admin-row-actions flex items-center justify-end gap-2">
+                <button @click="openEditModal(book)" class="row-action edit-action" title="Chỉnh sửa sách" aria-label="Chỉnh sửa sách">
+                  <Edit2 class="w-4 h-4" />
+                </button>
+                <button @click="deleteBook(book._id)" class="row-action delete-action" title="Xóa sách" aria-label="Xóa sách">
+                  <Trash2 class="w-4 h-4" />
+                </button>
               </div>
             </td>
           </tr>
@@ -75,11 +78,11 @@
     <!-- Modal Form -->
     <div v-if="showModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <div class="book-modal-header p-6 border-b border-gray-100 flex justify-between items-center">
           <h2 class="text-xl font-bold text-[#1f3728]">{{ isEdit ? 'Cập nhật sách' : 'Thêm sách mới' }}</h2>
           <button @click="closeModal" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"><X class="w-5 h-5" /></button>
         </div>
-        <div class="p-6 overflow-y-auto flex-1">
+        <div class="book-modal-body p-6 overflow-y-auto flex-1">
           <form @submit.prevent="saveBook" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -115,7 +118,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Sách có sẵn <span class="text-red-500">*</span></label>
-                <input v-model.number="form.availableCopies" type="number" min="0" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1f3728]/20 focus:border-[#1f3728] transition-colors">
+                <input v-model.number="form.availableCopies" type="number" min="0" :max="form.totalCopies" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1f3728]/20 focus:border-[#1f3728] transition-colors">
               </div>
             </div>
             
@@ -130,7 +133,7 @@
             </div>
           </form>
         </div>
-        <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+        <div class="book-modal-footer p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
           <button @click="closeModal" class="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">Hủy</button>
           <button @click="saveBook" class="px-5 py-2.5 bg-[#1f3728] text-white font-bold rounded-lg hover:bg-[#16241c] transition-colors shadow-sm">
             {{ isEdit ? 'Cập nhật' : 'Thêm sách' }}
@@ -145,6 +148,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { Search, Plus, Edit2, Trash2, X } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
+import BookCover from '@/components/books/BookCover.vue'
 import publisherService from '@/services/publisher'
 
 const books = ref([])
@@ -245,7 +249,7 @@ const saveBook = async () => {
     await loadData()
   } catch (error) {
     console.error('Lỗi khi lưu sách:', error)
-    alert('Có lỗi xảy ra khi lưu sách!')
+    alert(error.message || 'Có lỗi xảy ra khi lưu sách!')
   }
 }
 
@@ -256,7 +260,7 @@ const deleteBook = async (id) => {
       await loadData()
     } catch (error) {
       console.error('Lỗi khi xóa sách:', error)
-      alert('Có lỗi xảy ra khi xóa sách!')
+      alert(error.message || 'Có lỗi xảy ra khi xóa sách!')
     }
   }
 }
@@ -267,9 +271,68 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.row-action {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.edit-action { border-color: #285b85; background: #315f87; color: #fff; }
+.edit-action:hover { background: #244b6d; }
+.delete-action { border-color: #84302c; background: #a63d38; color: #fff; }
+.delete-action:hover { background: #84302c; }
+
+.book-admin-table th,
+.book-admin-table td {
+  vertical-align: middle;
+}
+.book-admin-table th {
+  white-space: nowrap;
+}
+.book-admin-table th:last-child,
+.book-admin-table td:last-child {
+  width: 112px;
+  min-width: 112px;
+}
+.admin-row-actions {
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+.action-column-header { background: #e8ede8; color: #263d30; }
+.action-column-cell { border-left: 1px solid #e2e7e2; background: #fff; }
+
 @media (hover: none), (max-width: 900px) {
   .admin-row-actions {
     opacity: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .book-modal-header,
+  .book-modal-body,
+  .book-modal-footer {
+    padding: 16px;
+  }
+
+  .book-modal-header h2 {
+    font-size: 1rem;
+  }
+
+  .book-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .book-modal-footer button {
+    width: 100%;
   }
 }
 </style>

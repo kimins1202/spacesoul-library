@@ -78,6 +78,12 @@ const bookSchema = new mongoose.Schema(
   },
 );
 
+bookSchema.pre("validate", function () {
+  if (this.availableCopies > this.totalCopies) {
+    this.invalidate("availableCopies", "Số bản khả dụng không được lớn hơn tổng số bản");
+  }
+});
+
 const Book = mongoose.model("Book", bookSchema);
 
 module.exports = Book;

@@ -1,5 +1,9 @@
 const Reader = require("../models/Reader");
 const Employee = require("../models/Employee");
+const Borrow = require("../models/Borrow");
+const mongoose = require("mongoose");
+
+const isValidId = id => mongoose.isValidObjectId(id);
 
 // ===== READER (ĐỘC GIẢ) OPERATIONS =====
 
@@ -106,9 +110,16 @@ const getAllEmployees = async (req, res) => {
 // Xóa Độc giả (Chỉ dành cho Admin)
 const deleteReader = async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã độc giả không hợp lệ" });
+    }
     const reader = await Reader.findById(req.params.id);
     if (!reader) {
       return res.status(404).json({ message: "Không tìm thấy độc giả" });
+    }
+    const hasBorrowHistory = await Borrow.exists({ reader: req.params.id });
+    if (hasBorrowHistory) {
+      return res.status(409).json({ message: "Không thể xóa độc giả đã có lịch sử mượn" });
     }
     await Reader.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Xóa độc giả thành công" });
@@ -120,6 +131,9 @@ const deleteReader = async (req, res) => {
 // Xóa Nhân viên (Chỉ dành cho Admin)
 const deleteEmployee = async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã nhân viên không hợp lệ" });
+    }
     // Không cho phép xóa chính mình
     if (req.params.id === req.user._id.toString()) {
       return res.status(400).json({ message: "Không thể xóa chính tài khoản của bạn" });
@@ -127,6 +141,10 @@ const deleteEmployee = async (req, res) => {
     const employee = await Employee.findById(req.params.id);
     if (!employee) {
       return res.status(404).json({ message: "Không tìm thấy nhân viên" });
+    }
+    const hasHandledBorrows = await Borrow.exists({ employee: req.params.id });
+    if (hasHandledBorrows) {
+      return res.status(409).json({ message: "Không thể xóa nhân viên đã xử lý phiếu mượn" });
     }
     await Employee.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Xóa nhân viên thành công" });
@@ -138,6 +156,9 @@ const deleteEmployee = async (req, res) => {
 // Khóa / Mở khóa tài khoản Độc giả (Admin)
 const toggleReaderStatus = async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã độc giả không hợp lệ" });
+    }
     const reader = await Reader.findById(req.params.id);
     if (!reader) {
       return res.status(404).json({ message: "Không tìm thấy độc giả" });

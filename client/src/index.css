@@ -106,6 +106,45 @@ textarea {
   font: inherit;
 }
 
+select {
+  min-height: 38px;
+  padding-right: 34px !important;
+  border: 1px solid #9eafa2 !important;
+  border-radius: 9px !important;
+  background-color: #fffdf8 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23254f3a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 11px center !important;
+  color: #173d2b !important;
+  font-weight: 650;
+  box-shadow: 0 3px 9px rgba(31,55,40,.07);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+select:hover {
+  border-color: #52735f !important;
+  background-color: #fff !important;
+}
+
+select:focus {
+  border-color: #173d2b !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(23,61,43,.18) !important;
+}
+
+select option {
+  background: #fffdf8;
+  color: #294536;
+}
+
+select option:checked {
+  background: #e6eee7;
+  color: #173d2b;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;

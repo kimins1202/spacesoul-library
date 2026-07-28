@@ -5,12 +5,12 @@
       <div class="max-w-7xl mx-auto px-6 h-[76px] flex items-center justify-between gap-4">
         <!-- Logo -->
         <div class="flex items-center gap-2 flex-shrink-0">
-          <router-link to="/" class="flex items-center gap-2 group">
+          <router-link to="/" class="site-brand flex items-center gap-3 group">
             <span class="brand-mark">
-              <img src="/spacesoul_logo.png" alt="Logo Spacesoul" class="w-7 h-7 group-hover:scale-110 transition-transform duration-300 rounded-full" />
+              <img src="/spacesoul_mark_v4_transparent.png" alt="Logo Spacesoul Library" class="brand-logo-image" />
             </span>
-            <span class="text-lg font-extrabold uppercase tracking-[0.04em] text-[#1f3728] group-hover:text-green-800 transition-colors">
-              SPACESOUL
+            <span class="brand-name text-lg font-extrabold uppercase tracking-[0.04em] text-[#1f3728] group-hover:text-green-800 transition-colors">
+              SPACESOUL LIBRARY
             </span>
           </router-link>
         </div>
@@ -47,10 +47,6 @@
             <span class="absolute -bottom-0.5 left-0 w-full h-[2px] bg-[#1f3728] transition-transform duration-300 origin-left"
               :class="route.path.startsWith('/contact') ? 'scale-x-100' : 'scale-x-0'"></span>
           </router-link>
-          <router-link v-if="isEmployee" to="/admin/dashboard"
-            class="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1f3728] text-white hover:bg-[#16241c] transition-colors">
-            Quản lý
-          </router-link>
         </nav>
 
         <!-- Right Side Actions -->
@@ -67,22 +63,10 @@
             </button>
           </div>
 
-          <!-- Notification Button -->
-          <div class="relative" v-if="isLoggedIn">
-            <button @click="toggleNotification"
-              class="relative p-2 rounded-xl text-gray-600 hover:text-[#1f3728] hover:bg-gray-100 transition-all">
-              <Bell class="w-5 h-5" />
-              <span v-if="unreadCount > 0"
-                class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm animate-pulse">
-                {{ unreadCount }}
-              </span>
-            </button>
-          </div>
-
           <!-- User Dropdown -->
           <div v-if="isLoggedIn" class="relative">
             <button @click="showUserMenu = !showUserMenu" :aria-expanded="showUserMenu" aria-label="Mở menu tài khoản"
-              class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-all">
+              class="account-trigger flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl transition-all">
               <div class="w-7 h-7 rounded-full bg-[#1f3728] text-white flex items-center justify-center text-xs font-bold">
                 {{ userInitial }}
               </div>
@@ -91,16 +75,16 @@
             </button>
             <!-- Dropdown -->
             <div v-if="showUserMenu"
-              class="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl py-1 overflow-hidden z-[60] animate-fade-in">
-              <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
+              class="account-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl py-1 overflow-hidden z-[60] animate-fade-in">
+              <div class="account-dropdown-head px-4 py-3 border-b">
                 <p class="text-sm font-bold text-[#1f3728] truncate">{{ userName }}</p>
                 <p class="text-[11px] text-gray-500 truncate mt-0.5">{{ currentUser?.email }}</p>
               </div>
               <div class="p-1.5 space-y-0.5">
-                <router-link to="/profile" @click="showUserMenu = false" class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#1f3728] font-medium rounded-xl transition-colors">
+                <router-link to="/profile" @click="showUserMenu = false" class="account-menu-item flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-colors">
                   <UserCircle class="w-4 h-4" /> Hồ sơ cá nhân
                 </router-link>
-                <router-link to="/borrowed" @click="showUserMenu = false" class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#1f3728] font-medium rounded-xl transition-colors">
+                <router-link to="/borrowed" @click="showUserMenu = false" class="account-menu-item flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-xl transition-colors">
                   <BookOpen class="w-4 h-4" /> Yêu cầu mượn của tôi
                 </router-link>
                 <div class="h-px bg-gray-100 mx-2 my-1"></div>
@@ -123,6 +107,34 @@
         </div>
       </div>
     </header>
+
+    <!-- Mobile navigation -->
+    <nav class="user-mobile-nav md:hidden" aria-label="Điều hướng di động">
+      <router-link to="/" :class="{ active: route.path === '/' }">
+        <House /><span>Trang chủ</span>
+      </router-link>
+      <router-link to="/books" :class="{ active: route.path.startsWith('/books') }">
+        <LibraryBig /><span>Danh mục</span>
+      </router-link>
+      <router-link
+        v-if="isLoggedIn && !isEmployee"
+        to="/borrowed"
+        :class="{ active: route.path.startsWith('/borrowed') }"
+      >
+        <ClipboardList /><span>Yêu cầu</span>
+      </router-link>
+      <router-link to="/guide" :class="{ active: route.path.startsWith('/guide') }">
+        <CircleHelp /><span>Hướng dẫn</span>
+      </router-link>
+      <button v-if="isLoggedIn" type="button" class="mobile-logout" @click="handleLogout">
+        <LogOut />
+        <span>Đăng xuất</span>
+      </button>
+      <router-link v-else to="/contact" :class="{ active: route.path.startsWith('/contact') }">
+        <MapPinned />
+        <span>Liên hệ</span>
+      </router-link>
+    </nav>
 
     <!-- ===== CART PANEL ===== -->
     <transition name="slide-right">
@@ -151,7 +163,7 @@
             <p class="text-gray-500 font-semibold mb-2">Giỏ mượn trống</p>
             <p class="text-gray-400 text-sm mb-6">Hãy thêm sách bạn muốn mượn vào đây</p>
             <router-link to="/books" @click="showCart = false"
-              class="text-sm font-bold px-6 py-2.5 bg-[#1f3728] text-white rounded-xl hover:bg-[#16241c] transition-colors">
+              class="empty-cart-button">
               Khám phá sách
             </router-link>
           </div>
@@ -161,11 +173,8 @@
             <div v-for="item in cart" :key="item._id"
               class="flex items-start gap-3 p-4 hover:bg-gray-50/50 transition-colors group">
               <!-- Cover -->
-              <div class="w-14 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 shadow-sm">
-                <img v-if="item.cover" :src="item.cover" :alt="item.title" @error="useCoverFallback" class="w-full h-full object-cover" />
-                <div v-else class="w-full h-full flex items-center justify-center">
-                  <BookOpen class="w-6 h-6 text-gray-300" />
-                </div>
+              <div class="cart-book-cover w-16 h-[92px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <BookCover :src="item.cover" :title="item.title" :author="item.author" />
               </div>
               <!-- Info -->
               <div class="flex-1 min-w-0">
@@ -184,8 +193,8 @@
                 </div>
               </div>
               <!-- Remove -->
-              <button @click="removeFromCart(item._id)"
-                class="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 flex-shrink-0">
+              <button @click="removeFromCart(item._id)" title="Xóa khỏi giỏ" aria-label="Xóa sách khỏi giỏ"
+                class="cart-remove-button p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all flex-shrink-0">
                 <Trash2 class="w-4 h-4" />
               </button>
             </div>
@@ -215,80 +224,6 @@
       </div>
     </transition>
 
-    <!-- ===== NOTIFICATION PANEL ===== -->
-    <transition name="slide-right">
-      <div v-if="showNotification" class="fixed inset-0 z-[100] flex justify-end" @click.self="showNotification = false">
-        <!-- Overlay -->
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showNotification = false"></div>
-        <!-- Panel -->
-        <div class="relative w-full max-w-sm bg-white shadow-2xl flex flex-col h-full">
-          <!-- Header -->
-          <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <Bell class="w-5 h-5 text-[#1f3728]" />
-              <h2 class="text-base font-bold text-[#1f3728]">Thông báo</h2>
-              <span v-if="unreadCount > 0" class="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ unreadCount }} mới</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button v-if="notificationList.length > 0" @click="markAllAsRead" class="text-[11px] font-semibold text-[#1f3728] hover:underline">Đọc hết</button>
-              <button @click="showNotification = false" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
-                <X class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Empty -->
-          <div v-if="notificationList.length === 0" class="flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <Bell class="w-10 h-10 text-gray-300" />
-            </div>
-            <p class="text-gray-500 font-semibold">Không có thông báo</p>
-            <p class="text-gray-400 text-sm mt-1">Các thông báo mới sẽ xuất hiện ở đây</p>
-          </div>
-
-          <!-- Notifications List -->
-          <div v-else class="flex-1 overflow-y-auto divide-y divide-gray-50">
-            <div v-for="notif in notificationList" :key="notif.id"
-              @click="markAsRead(notif.id)"
-              :class="['flex gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors group', !notif.read ? 'bg-blue-50/40' : '']">
-              <!-- Icon -->
-              <div :class="['w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5', 
-                notif.type === 'success' ? 'bg-green-100 text-green-600' :
-                notif.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                notif.type === 'error' ? 'bg-red-100 text-red-600' :
-                'bg-blue-100 text-blue-600']">
-                <CheckCircle2 v-if="notif.type === 'success'" class="w-4 h-4" />
-                <AlertTriangle v-else-if="notif.type === 'warning'" class="w-4 h-4" />
-                <XCircle v-else-if="notif.type === 'error'" class="w-4 h-4" />
-                <Info v-else class="w-4 h-4" />
-              </div>
-              <!-- Content -->
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-gray-800">{{ notif.title }}</p>
-                <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ notif.message }}</p>
-                <p class="text-[10px] text-gray-400 mt-1">{{ formatTime(notif.createdAt) }}</p>
-              </div>
-              <!-- Unread dot & delete -->
-              <div class="flex flex-col items-end gap-2 flex-shrink-0">
-                <div v-if="!notif.read" class="w-2 h-2 rounded-full bg-blue-500 mt-1.5"></div>
-                <button @click.stop="removeNotification(notif.id)"
-                  class="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-red-500 transition-all">
-                  <X class="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div v-if="notificationList.length > 0" class="px-6 py-4 border-t border-gray-100">
-            <button @click="clearAllNotifications" class="w-full text-xs font-semibold text-gray-400 hover:text-red-500 transition-colors">
-              Xóa tất cả thông báo
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
-
     <!-- Main Content -->
     <main class="flex-1">
       <router-view v-slot="{ Component }">
@@ -302,7 +237,7 @@
     <footer class="user-footer bg-[#1b2a20] text-white pt-16 pb-8">
       <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/10 pb-12 mb-8">
         <div class="col-span-1 md:col-span-2">
-          <h2 class="text-xl font-extrabold uppercase tracking-tighter mb-4">SPACESOUL</h2>
+          <h2 class="text-xl font-extrabold uppercase tracking-tighter mb-4">SPACESOUL LIBRARY</h2>
           <p class="text-white/70 text-sm leading-relaxed max-w-sm">
             Không gian thư viện số hiện đại, mang tri thức đến gần hơn với cộng đồng thông qua trải nghiệm nghệ thuật và tinh tế.
           </p>
@@ -343,22 +278,21 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  Bell, UserCircle, ShoppingBag, BookOpen, BookPlus, X, Trash2,
-  ChevronDown, LogOut, Loader2, CheckCircle2, AlertTriangle, XCircle, Info
+  UserCircle, ShoppingBag, BookOpen, BookPlus, X, Trash2,
+  ChevronDown, LogOut, Loader2, House, LibraryBig, ClipboardList,
+  CircleHelp, MapPinned
 } from 'lucide-vue-next'
 import { authService } from '@/services/auth'
 import { borrowService } from '@/services/borrow'
-import { useCoverFallback } from '@/utils/imageFallback'
+import BookCover from '@/components/books/BookCover.vue'
 import {
-  cart, cartCount, removeFromCart, clearCart,
-  notificationList, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAllNotifications, addNotification
+  cart, cartCount, removeFromCart, clearCart
 } from '@/stores/useAppStore'
 
 const route = useRoute()
 const router = useRouter()
 
 const showCart = ref(false)
-const showNotification = ref(false)
 const showUserMenu = ref(false)
 const isBorrowing = ref(false)
 
@@ -376,11 +310,6 @@ const totalCartPrice = computed(() => cart.value.reduce((sum, item) => sum + (it
 
 const toggleCart = () => {
   showCart.value = !showCart.value
-  if (showCart.value) showNotification.value = false
-}
-const toggleNotification = () => {
-  showNotification.value = !showNotification.value
-  if (showNotification.value) showCart.value = false
 }
 
 const borrowAllFromCart = async () => {
@@ -405,19 +334,8 @@ const borrowAllFromCart = async () => {
   isBorrowing.value = false
   showCart.value = false
 
-  if (results.success > 0) {
-    addNotification({
-      title: 'Đăng ký mượn thành công!',
-      message: `Đã gửi yêu cầu mượn ${results.success} cuốn sách. Vui lòng chờ thủ thư duyệt.`,
-      type: 'success'
-    })
-  }
   if (results.failed > 0) {
-    addNotification({
-      title: 'Một số sách không thể mượn',
-      message: results.errors.join('; '),
-      type: 'warning'
-    })
+    alert(`Không thể gửi ${results.failed} yêu cầu:\n${results.errors.join('\n')}`)
   }
   if (results.success > 0) {
     router.push('/borrowed')
@@ -427,20 +345,10 @@ const borrowAllFromCart = async () => {
 const handleLogout = () => {
   showUserMenu.value = false
   showCart.value = false
-  showNotification.value = false
   authService.logout()
   router.replace('/login')
 }
 
-const formatTime = (iso) => {
-  const d = new Date(iso)
-  const now = new Date()
-  const diff = Math.floor((now - d) / 1000)
-  if (diff < 60) return 'Vừa xong'
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`
-  return d.toLocaleDateString('vi-VN')
-}
 </script>
 
 <style scoped>
@@ -458,15 +366,92 @@ const formatTime = (iso) => {
   box-shadow: 0 8px 30px rgba(25, 48, 34, 0.055);
 }
 
+.account-trigger {
+  border: 1px solid transparent;
+}
+
+.account-trigger:hover,
+.account-trigger[aria-expanded="true"] {
+  border-color: #d8dfd8;
+  background: #f0f3ed;
+}
+
+.account-dropdown {
+  border: 1px solid #dbe1da;
+  background: #fffdf9;
+  box-shadow: 0 18px 42px rgba(23,55,39,.16);
+}
+
+.account-dropdown-head {
+  border-color: #e5e8e2;
+  background: #f2f4ef;
+}
+
+.account-menu-item {
+  color: #526158;
+}
+
+.account-menu-item:hover {
+  background: #eaf0e9;
+  color: #1f4b35;
+}
+
+.cart-book-cover {
+  border: 1px solid #dfe3dc;
+  box-shadow: 0 5px 14px rgba(28,52,38,.1);
+}
+
+.cart-remove-button {
+  opacity: .72;
+}
+
+.cart-remove-button:hover,
+.cart-remove-button:focus-visible {
+  opacity: 1;
+}
+
+.empty-cart-button {
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #173d2b;
+  border-radius: 10px;
+  background: #1f4935;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(31,73,53,.15);
+  transition: .2s ease;
+}
+
+.empty-cart-button:hover {
+  background: #153624;
+  transform: translateY(-1px);
+}
+
 .brand-mark {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 13px;
-  background: #f0ede3;
-  border: 1px solid rgba(31, 55, 40, 0.09);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.8);
+  flex: 0 0 auto;
+}
+
+.brand-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.32);
+  transition: transform .25s ease;
+}
+
+.site-brand:hover .brand-logo-image {
+  transform: scale(1.38);
+}
+
+.brand-name {
+  text-shadow: 0 1px rgba(255,255,255,.8);
 }
 
 .register-link,
@@ -499,6 +484,114 @@ const formatTime = (iso) => {
 .user-footer > div {
   position: relative;
   z-index: 1;
+}
+
+.user-mobile-nav {
+  position: fixed;
+  z-index: 90;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  min-height: 66px;
+  padding: 7px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid rgba(31, 55, 40, .12);
+  border-radius: 18px;
+  background: rgba(255, 255, 252, .96);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 42px rgba(18, 45, 31, .18);
+}
+
+.user-mobile-nav a,
+.user-mobile-nav button {
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 7px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  color: #7d8980;
+  font-size: .58rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.user-mobile-nav svg {
+  width: 19px;
+  height: 19px;
+}
+
+.user-mobile-nav a.active {
+  background: #e9eee8;
+  color: #1f4d36;
+}
+
+.user-mobile-nav .mobile-logout {
+  color: #a2443e;
+}
+
+.user-mobile-nav .mobile-logout:active {
+  background: #f6e8e5;
+}
+
+@media (max-width: 767px) {
+  .user-shell {
+    padding-bottom: 86px;
+  }
+
+  .user-header > div {
+    height: 66px;
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .brand-name {
+    font-size: .78rem;
+    letter-spacing: .02em;
+  }
+
+  .user-footer {
+    margin-bottom: -86px;
+    padding-bottom: 86px;
+  }
+}
+
+@media (max-width: 420px) {
+  .user-header > div {
+    gap: 6px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .site-brand {
+    gap: 5px;
+  }
+
+  .brand-name {
+    max-width: 92px;
+    font-size: .66rem;
+    line-height: 1.05;
+  }
+
+  .user-header :deep(a[href="/login"]),
+  .user-header :deep(a[href="/register"]) {
+    padding: 7px 9px;
+    font-size: .66rem;
+  }
+
+  .user-mobile-nav a,
+  .user-mobile-nav button {
+    padding-inline: 4px;
+  }
 }
 
 /* Slide right panel */

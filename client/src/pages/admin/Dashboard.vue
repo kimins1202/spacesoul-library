@@ -62,9 +62,9 @@
       <div class="dashboard-panel lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-lg font-bold text-[#1f3728]">Xu hướng mượn sách</h3>
-          <select class="text-xs font-medium border border-gray-200 rounded px-2 py-1 outline-none">
-            <option>7 ngày qua</option>
-            <option>30 ngày qua</option>
+          <select v-model="selectedDays" @change="loadStats" class="text-xs font-medium border border-gray-200 rounded px-2 py-1 outline-none">
+            <option :value="7">7 ngày qua</option>
+            <option :value="30">30 ngày qua</option>
           </select>
         </div>
         <!-- Thêm component BarChart từ vue-chartjs -->
@@ -73,21 +73,20 @@
         </div>
       </div>
 
-      <!-- Featured Book Card -->
-      <div class="featured-panel bg-[#2c4c3b] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden text-white shadow-md">
-        <!-- Background Icon -->
-        <BookOpen class="absolute -right-4 -bottom-4 w-40 h-40 text-white/5" />
-        
-        <div class="relative z-10">
-          <h3 class="text-xl font-bold mb-4 font-title">Tiêu điểm</h3>
-          <p class="text-white/80 text-sm leading-relaxed mb-6 font-medium italic">
-            Quản lý sách hiệu quả, luôn theo dõi sát sao tình trạng mượn trả để phục vụ bạn đọc tốt nhất.
-          </p>
+      <!-- Borrow status chart -->
+      <div class="dashboard-panel bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+        <div class="mb-4">
+          <h3 class="text-lg font-bold text-[#1f3728]">Trạng thái phiếu mượn</h3>
+          <p class="mt-1 text-xs text-gray-500">Tổng hợp từ toàn bộ phiếu trong hệ thống</p>
         </div>
-        
-        <router-link to="/admin/books" class="relative z-10 text-center bg-[#aed581] text-[#1f3728] w-full py-3 rounded text-sm font-bold shadow-sm hover:bg-[#c5e1a5] transition-colors block">
-          Quản lý sách ngay
-        </router-link>
+        <div class="h-52">
+          <Doughnut v-if="statusChartData.datasets[0].data.some(value => value > 0)" :data="statusChartData" :options="statusChartOptions" />
+          <div v-else class="h-full grid place-items-center text-sm text-gray-400">Chưa có dữ liệu mượn sách</div>
+        </div>
+        <div class="inventory-summary">
+          <span><b>{{ stats.inventory.availableCopies }}</b> bản đang sẵn có</span>
+          <span><b>{{ borrowedCopies }}</b> bản đang được giữ/mượn</span>
+        </div>
       </div>
     </div>
 
@@ -115,8 +114,7 @@
             <tr v-for="borrow in stats.recentBorrows" :key="borrow._id" class="hover:bg-gray-50/50 transition-colors">
               <td class="px-6 py-4 flex items-center gap-4">
                 <div class="w-10 h-14 bg-gray-200 rounded shadow-sm overflow-hidden flex-shrink-0">
-                  <img v-if="borrow.book?.cover" :src="borrow.book.cover" class="w-full h-full object-cover">
-                  <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Cover</div>
+                  <BookCover :src="borrow.book?.cover" :title="borrow.book?.title" :author="borrow.book?.author" />
                 </div>
                 <div>
                   <p class="text-sm font-bold text-[#1f3728]">{{ borrow.book?.title || 'Sách đã bị xóa' }}</p>
@@ -150,14 +148,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Library, Hourglass, UserCheck, TrendingUp, AlertCircle, ArrowUp, CheckCircle, XCircle, BookOpen } from 'lucide-vue-next'
-import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+import { ref, computed, onMounted } from 'vue'
+import { Library, Hourglass, UserCheck, AlertCircle } from 'lucide-vue-next'
+import { Bar, Doughnut } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, ArcElement, CategoryScale, LinearScale } from 'chart.js'
 import dashboardService from '@/services/dashboard'
 import { authService } from '@/services/auth'
+import BookCover from '@/components/books/BookCover.vue'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Title, Tooltip, Legend, BarElement, ArcElement, CategoryScale, LinearScale)
 
 const currentAdmin = authService.getCurrentUser()
 const adminDisplayName = currentAdmin?.firstName || 'Quản trị viên'
@@ -171,20 +170,39 @@ const stats = ref({
   totalBooks: 0,
   pendingRequests: 0,
   activeUsers: 0,
-  recentBorrows: []
+  recentBorrows: [],
+  borrowTrend: [],
+  statusDistribution: {},
+  inventory: { totalCopies: 0, availableCopies: 0 }
 })
 
-const chartData = ref({
-  labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'],
-  datasets: [
-    {
+const selectedDays = ref(7)
+const chartData = computed(() => ({
+  labels: stats.value.borrowTrend.map(item => new Date(`${item.date}T00:00:00`).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })),
+  datasets: [{
       label: 'Lượt mượn',
-      backgroundColor: ['#e2eadb', '#e2eadb', '#e2eadb', '#e2eadb', '#e2eadb', '#e2eadb', '#1f3728'],
+      backgroundColor: '#2b6246',
+      hoverBackgroundColor: '#d0ad64',
       borderRadius: 4,
-      data: [180, 220, 190, 280, 250, 210, 390]
-    }
-  ]
-})
+      data: stats.value.borrowTrend.map(item => item.count)
+  }]
+}))
+
+const statusKeys = ['pending', 'borrowing', 'pending-return', 'overdue', 'returned', 'cancelled']
+const statusChartData = computed(() => ({
+  labels: statusKeys.map(statusLabel),
+  datasets: [{
+    data: statusKeys.map(key => stats.value.statusDistribution[key] || 0),
+    backgroundColor: ['#d7a946', '#356c94', '#7c5fa1', '#b64b47', '#67806e', '#aab2ac'],
+    borderWidth: 0,
+    hoverOffset: 4
+  }]
+}))
+
+const borrowedCopies = computed(() => Math.max(
+  0,
+  (stats.value.inventory.totalCopies || 0) - (stats.value.inventory.availableCopies || 0)
+))
 
 const chartOptions = ref({
   responsive: true,
@@ -213,9 +231,26 @@ const chartOptions = ref({
   }
 })
 
+const statusChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '68%',
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, padding: 12, font: { size: 10 } }
+    },
+    tooltip: {
+      callbacks: {
+        label: context => `${context.label}: ${context.parsed} phiếu`
+      }
+    }
+  }
+}
+
 const loadStats = async () => {
   try {
-    stats.value = await dashboardService.getStats()
+    stats.value = await dashboardService.getStats(selectedDays.value)
   } catch (error) {
     console.error('Lỗi khi tải thống kê:', error)
   }
@@ -325,6 +360,30 @@ onMounted(() => {
     radial-gradient(circle at 100% 100%, rgba(224,189,112,.22), transparent 15rem),
     linear-gradient(145deg, #244e39, #173527);
   box-shadow: 0 16px 36px rgba(23,55,43,.16);
+}
+
+.inventory-summary {
+  margin-top: 14px;
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border-top: 1px solid #e6e9e4;
+}
+
+.inventory-summary span {
+  padding: 8px;
+  border-radius: 9px;
+  background: #f3f5f1;
+  color: #69756d;
+  font-size: .66rem;
+  line-height: 1.4;
+}
+
+.inventory-summary b {
+  display: block;
+  color: #234532;
+  font-size: .9rem;
 }
 
 @media (max-width: 767px) {

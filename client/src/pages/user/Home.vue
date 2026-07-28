@@ -56,8 +56,7 @@
       <div v-else-if="featuredBooks.length" class="book-grid">
         <router-link v-for="book in featuredBooks" :key="book._id" :to="`/books/${book._id}`" class="featured-card">
           <div class="cover-wrap">
-            <img v-if="book.cover" :src="book.cover" :alt="`Bìa sách ${book.title}`" @error="useCoverFallback" />
-            <div v-else class="cover-placeholder"><BookOpen class="w-10 h-10" /></div>
+            <BookCover :src="book.cover" :title="book.title" :author="book.author" />
             <span :class="['availability', { unavailable: !book.availableCopies }]">
               {{ book.availableCopies ? `Còn ${book.availableCopies} cuốn` : 'Đang hết sách' }}
             </span>
@@ -122,7 +121,7 @@ import {
   Heart, Library, Search, Users, WalletCards
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
-import { useCoverFallback } from '@/utils/imageFallback'
+import BookCover from '@/components/books/BookCover.vue'
 
 const router = useRouter()
 const books = ref([])
@@ -185,22 +184,41 @@ onMounted(async () => {
 
 <style scoped>
 .home-page { background: #f8f7f2; color: #17372d; }
-.hero { position: relative; overflow: hidden; min-height: 430px; color: #17372d; background: linear-gradient(180deg, #f5f2ea 0%, #fbfaf6 100%); border-bottom: 1px solid #e7e2d7; }
-.hero::before { content: ""; position: absolute; inset: 0; opacity: .45; background: radial-gradient(circle at 50% -30%, rgba(45, 86, 61, .14), transparent 38rem); }
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 430px;
+  color: #fff;
+  background:
+    linear-gradient(100deg, rgba(12,39,27,.94) 0%, rgba(19,52,37,.86) 52%, rgba(16,42,30,.76) 100%),
+    url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=85&w=2000&auto=format&fit=crop') center 48% / cover;
+  border-bottom: 1px solid #d4c18c;
+  box-shadow: 0 14px 34px rgba(20, 49, 34, .13);
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 5%, rgba(226,195,126,.16), transparent 30rem),
+    linear-gradient(180deg, transparent 65%, rgba(8,27,18,.18));
+  pointer-events: none;
+}
 .hero-inner { position: relative; z-index: 2; max-width: 1240px; min-height: 430px; margin: auto; padding: 80px 28px 54px; display: flex; align-items: center; justify-content: center; }
 .hero-copy { width: 100%; text-align: center; }
-.hero-label { display: inline-flex; align-items: center; gap: 7px; color: #7c6942; font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.hero-label { display: inline-flex; align-items: center; gap: 7px; color: #e5c77f; font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .section-kicker { display: inline-flex; align-items: center; gap: 8px; color: #b48535; font-size: .76rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
-.hero h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.08; letter-spacing: -.045em; color: #1f4935; }
-.hero-copy > p { max-width: 720px; margin: 0 auto; color: #657169; font-size: .92rem; line-height: 1.75; }
-.hero-search { width: 100%; margin: 34px auto 0; padding: 7px; display: grid; grid-template-columns: minmax(260px, 1fr) 180px 190px auto; align-items: center; gap: 7px; border: 1px solid #dfdbd1; background: rgba(255,255,255,.96); border-radius: 13px; box-shadow: 0 15px 40px rgba(32, 57, 42, .08); text-align: left; }
+.hero h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.08; letter-spacing: -.045em; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.18); }
+.hero-copy > p { max-width: 720px; margin: 0 auto; color: rgba(255,255,255,.72); font-size: .92rem; line-height: 1.75; }
+.hero-search { width: 100%; margin: 34px auto 0; padding: 7px; display: grid; grid-template-columns: minmax(260px, 1fr) 180px 190px auto; align-items: center; gap: 7px; border: 1px solid #d9dad3; background: #fff; border-radius: 13px; box-shadow: 0 12px 30px rgba(32,57,42,.07); text-align: left; }
 .search-field { min-width: 0; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #809087; }
 .hero-search input, .hero-search select { width: 100%; border: 0; outline: 0; padding: 11px 8px; background: transparent; color: #37443c; font-size: .78rem; }
 .hero-search select { border-left: 1px solid #e7e3da; cursor: pointer; }
 .hero-search button, .guide-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 9px; background: #254f3a; color: white; font-weight: 800; font-size: .76rem; cursor: pointer; }
 .hero-search button:hover { background: #173a29; }
-.quick-links { margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; align-items: center; color: #8a948d; font-size: .7rem; }
-.quick-links button { border: 1px solid #ddd8cc; border-radius: 99px; padding: 5px 10px; background: rgba(255,255,255,.7); color: #536359; cursor: pointer; }
+.quick-links { margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; align-items: center; color: rgba(255,255,255,.58); font-size: .7rem; }
+.quick-links button { border: 1px solid rgba(255,255,255,.2); border-radius: 99px; padding: 5px 10px; background: rgba(255,255,255,.1); color: rgba(255,255,255,.82); backdrop-filter: blur(8px); cursor: pointer; }
+.quick-links button:hover { border-color: rgba(229,199,127,.65); background: rgba(255,255,255,.16); color: #fff; }
 .hero-visual { position: relative; min-height: 450px; }
 .book-stack { position: absolute; right: 9%; bottom: 18px; width: 290px; height: 390px; transform: rotate(3deg); }
 .book { position: absolute; bottom: 0; width: 210px; height: 340px; padding: 26px; display: flex; align-items: flex-end; border-radius: 8px 16px 16px 8px; box-shadow: -14px 22px 42px rgba(0,0,0,.32), inset 8px 0 rgba(255,255,255,.1); font-weight: 800; letter-spacing: .18em; }

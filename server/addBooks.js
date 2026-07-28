@@ -17,7 +17,19 @@ const catalog = [
   ["Trí Tuệ Nhân Tạo: Cuộc Cách Mạng Mới", "Kai-Fu Lee", "congnghe", 34000, 2023, 8, "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop", "Góc nhìn thực tế về trí tuệ nhân tạo, việc làm và tương lai con người."],
   ["Hoàng Tử Bé", "Antoine de Saint-Exupéry", "thieunhi", 14000, 2021, 18, "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop", "Tác phẩm giàu chất thơ về tình bạn, tình yêu và trách nhiệm."],
   ["Kính Vạn Hoa", "Nguyễn Nhật Ánh", "thieunhi", 16000, 2020, 16, "https://images.unsplash.com/photo-1511108690759-009324a90311?q=80&w=600&auto=format&fit=crop", "Những câu chuyện học đường vui nhộn xoay quanh tình bạn và trưởng thành."],
-  ["Nhà Đầu Tư Thông Minh", "Benjamin Graham", "taichinh", 42000, 2021, 7, "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=600&auto=format&fit=crop", "Nền tảng của đầu tư giá trị, quản trị rủi ro và kỷ luật tài chính."]
+  ["Nhà Đầu Tư Thông Minh", "Benjamin Graham", "taichinh", 42000, 2021, 7, "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=600&auto=format&fit=crop", "Nền tảng của đầu tư giá trị, quản trị rủi ro và kỷ luật tài chính."],
+  ["Đắc Nhân Tâm", "Dale Carnegie", "kynang", 20000, 2021, 14, "", "Những nguyên tắc giao tiếp, thấu hiểu và xây dựng mối quan hệ bền vững."],
+  ["Đi Tìm Lẽ Sống", "Viktor E. Frankl", "kynang", 22000, 2020, 10, "", "Hành trình tìm kiếm ý nghĩa và nghị lực sống trong những hoàn cảnh khắc nghiệt."],
+  ["Rừng Na Uy", "Haruki Murakami", "vanhoc", 26000, 2021, 9, "", "Câu chuyện trưởng thành, tình yêu và ký ức trong xã hội Nhật Bản hiện đại."],
+  ["Không Gia Đình", "Hector Malot", "vanhoc", 19000, 2020, 12, "", "Cuộc phiêu lưu cảm động về lòng nhân hậu, nghị lực và khát vọng có một mái ấm."],
+  ["Bố Già", "Mario Puzo", "vanhoc", 30000, 2022, 8, "", "Tiểu thuyết nổi tiếng về gia đình, quyền lực và những lựa chọn đầy đánh đổi."],
+  ["Vũ Trụ Trong Vỏ Hạt Dẻ", "Stephen Hawking", "khoahoc", 33000, 2019, 7, "", "Giới thiệu trực quan các ý tưởng lớn của vật lý hiện đại và cấu trúc vũ trụ."],
+  ["Lược Sử Vạn Vật", "Bill Bryson", "khoahoc", 36000, 2022, 9, "", "Hành trình sinh động qua những khám phá quan trọng về Trái Đất và sự sống."],
+  ["The Pragmatic Programmer", "Andrew Hunt & David Thomas", "congnghe", 39000, 2023, 6, "", "Tư duy và phương pháp thực hành giúp phát triển phần mềm bền vững, hiệu quả."],
+  ["Design Patterns", "Erich Gamma", "congnghe", 41000, 2022, 5, "", "Các mẫu thiết kế nền tảng để tổ chức và tái sử dụng giải pháp trong phần mềm."],
+  ["Dạy Con Làm Giàu", "Robert T. Kiyosaki", "taichinh", 25000, 2021, 11, "", "Những bài học nhập môn về tài sản, dòng tiền và tư duy tài chính cá nhân."],
+  ["Cây Cam Ngọt Của Tôi", "José Mauro de Vasconcelos", "thieunhi", 18000, 2022, 13, "", "Câu chuyện trong trẻo và xúc động về tuổi thơ, tình yêu thương và sự trưởng thành."],
+  ["Chuyện Con Mèo Dạy Hải Âu Bay", "Luis Sepúlveda", "thieunhi", 15000, 2021, 16, "", "Câu chuyện ấm áp về lời hứa, lòng bao dung và dũng khí vượt qua giới hạn."]
 ];
 
 const run = async () => {

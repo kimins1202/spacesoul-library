@@ -6,12 +6,12 @@
         <!-- Logo -->
         <div class="px-6 py-6 border-b border-white/10">
           <div class="flex items-center gap-2.5">
-            <div class="admin-brand-mark w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-              <BookOpen class="w-5 h-5 text-[#e0bd70]" />
+            <div class="admin-brand-mark">
+              <img src="/spacesoul_mark_v4_admin.png" alt="Logo Spacesoul Library" />
             </div>
             <div>
-              <h1 class="text-sm font-extrabold text-white leading-tight uppercase tracking-tight">Spacesoul</h1>
-              <p class="text-[10px] font-semibold text-white/50 uppercase tracking-[0.16em]">Library Console</p>
+              <h1 class="text-[13px] font-extrabold text-white leading-tight uppercase tracking-tight">Spacesoul Library</h1>
+              <p class="text-[9px] font-semibold text-[#dfbd75] uppercase tracking-[0.16em]">Administration</p>
             </div>
           </div>
         </div>
@@ -63,25 +63,25 @@
             Người dùng
           </router-link>
 
-          <p class="text-[9px] font-bold text-white/30 uppercase tracking-widest px-3 pt-4 pb-1.5">Truy cập nhanh</p>
-          <router-link to="/"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-all">
-            <ExternalLink class="w-4 h-4 flex-shrink-0" />
-            Xem trang thư viện
-          </router-link>
         </nav>
       </div>
 
       <!-- Bottom: User info & Logout -->
       <div class="p-3 border-t border-white/10">
         <div class="flex items-center gap-3 px-3 py-3 rounded-xl bg-white/8">
-          <div class="w-8 h-8 rounded-full bg-white/20 border border-white/20 flex items-center justify-center font-bold text-sm text-white flex-shrink-0">
-            {{ adminInitial }}
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-bold text-white truncate">{{ adminName }}</p>
-            <p class="text-[10px] text-white/50 font-medium capitalize">{{ isAdmin ? 'Quản trị viên' : 'Nhân viên' }}</p>
-          </div>
+          <router-link
+            to="/admin/profile"
+            title="Xem thông tin cá nhân"
+            class="admin-account-link min-w-0 flex flex-1 items-center gap-3 rounded-lg"
+          >
+            <div class="w-8 h-8 rounded-full bg-white/20 border border-white/20 flex items-center justify-center font-bold text-sm text-white flex-shrink-0">
+              {{ adminInitial }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-bold text-white truncate">{{ adminName }}</p>
+              <p class="text-[10px] text-white/50 font-medium capitalize">{{ isAdmin ? 'Quản trị viên' : 'Nhân viên' }}</p>
+            </div>
+          </router-link>
           <button @click="handleLogout" title="Đăng xuất"
             class="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all flex-shrink-0">
             <LogOut class="w-4 h-4" />
@@ -100,18 +100,17 @@
           <p class="text-sm text-gray-500">{{ currentDate }}</p>
         </div>
         <div class="flex items-center gap-3">
-          <router-link to="/"
-            class="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-[#1f3728]/10 bg-[#f5f3eb] text-[#1f3728] text-xs font-bold hover:bg-[#ebe7db] transition-colors">
-            <ExternalLink class="w-3.5 h-3.5" />
-            Trang thư viện
-          </router-link>
           <!-- Pending badge -->
-          <div v-if="pendingCount > 0" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
+          <div v-if="pendingCount > 0" class="pending-summary flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
             <div class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
             <span class="text-xs font-bold text-amber-700">{{ pendingCount }} yêu cầu đang chờ</span>
           </div>
           <!-- User info -->
-          <div class="flex items-center gap-2 pl-3 border-l border-gray-200">
+          <router-link
+            to="/admin/profile"
+            title="Xem thông tin cá nhân"
+            class="admin-topbar-account flex items-center gap-2 pl-3 border-l border-gray-200 rounded-r-lg"
+          >
             <div class="w-7 h-7 rounded-full bg-[#1f3728] text-white flex items-center justify-center text-xs font-bold">
               {{ adminInitial }}
             </div>
@@ -119,7 +118,16 @@
               <p class="text-xs font-bold text-gray-800 leading-tight">{{ adminName }}</p>
               <p class="text-[10px] text-gray-400">{{ isAdmin ? 'Admin' : 'Nhân viên' }}</p>
             </div>
-          </div>
+          </router-link>
+          <button
+            type="button"
+            class="admin-mobile-logout md:hidden"
+            title="Đăng xuất"
+            aria-label="Đăng xuất"
+            @click="handleLogout"
+          >
+            <LogOut />
+          </button>
         </div>
       </header>
 
@@ -147,17 +155,17 @@
       <router-link v-if="isAdmin" to="/admin/users" :class="{ active: route.path.startsWith('/admin/users') }">
         <Users /><span>Độc giả</span>
       </router-link>
-      <router-link to="/">
-        <ExternalLink /><span>Thư viện</span>
+      <router-link to="/admin/profile" :class="{ active: route.path === '/admin/profile' }">
+        <CircleUserRound /><span>Cá nhân</span>
       </router-link>
     </nav>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { LayoutDashboard, Library, Users, ClipboardList, LogOut, BookOpen, ExternalLink } from 'lucide-vue-next'
+import { LayoutDashboard, Library, Users, ClipboardList, LogOut, CircleUserRound } from 'lucide-vue-next'
 import { authService } from '@/services/auth'
 import { borrowService } from '@/services/borrow'
 
@@ -175,7 +183,8 @@ const routeNames = {
   'admin-dashboard': 'Thống kê tổng quan',
   'admin-books': 'Quản lý sách',
   'admin-users': 'Quản lý người dùng',
-  'admin-borrows': 'Quản lý mượn trả'
+  'admin-borrows': 'Quản lý mượn trả',
+  'admin-profile': 'Thông tin cá nhân'
 }
 
 const currentPageName = computed(() => routeNames[route.name] || 'Quản trị')
@@ -203,7 +212,14 @@ const loadPendingCount = async () => {
   }
 }
 
-onMounted(loadPendingCount)
+onMounted(() => {
+  loadPendingCount()
+  window.addEventListener('borrow-status-changed', loadPendingCount)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('borrow-status-changed', loadPendingCount)
+})
 </script>
 
 <style scoped>
@@ -267,8 +283,60 @@ onMounted(loadPendingCount)
 }
 
 .admin-brand-mark {
-  border: 1px solid rgba(255,255,255,.13);
-  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.14);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.admin-brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.4);
+  filter: drop-shadow(0 3px 7px rgba(0, 0, 0, .18));
+}
+
+.admin-account-link,
+.admin-topbar-account {
+  transition: background-color .2s ease, transform .2s ease;
+}
+
+.admin-account-link:hover {
+  background: rgba(255, 255, 255, .08);
+}
+
+.admin-topbar-account {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 7px;
+}
+
+.admin-topbar-account:hover {
+  background: #eef2ec;
+}
+
+.admin-mobile-logout {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ead4d0;
+  border-radius: 10px;
+  background: #fbefed;
+  color: #a2443e;
+}
+
+.admin-mobile-logout svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-mobile-logout:active {
+  background: #f4deda;
 }
 
 .admin-topbar {
@@ -317,6 +385,7 @@ onMounted(loadPendingCount)
   bottom: 10px;
   min-height: 66px;
   padding: 8px 6px;
+  display: flex;
   align-items: center;
   justify-content: space-around;
   border: 1px solid rgba(31,55,40,.11);
@@ -327,7 +396,8 @@ onMounted(loadPendingCount)
 }
 
 .admin-mobile-nav a {
-  min-width: 52px;
+  min-width: 0;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -337,6 +407,7 @@ onMounted(loadPendingCount)
   color: #869087;
   font-size: .58rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .admin-mobile-nav a > svg,
@@ -382,6 +453,50 @@ onMounted(loadPendingCount)
 
   .admin-content {
     padding: 18px 16px 94px;
+  }
+
+  .pending-summary {
+    padding: 7px;
+  }
+
+  .pending-summary span {
+    display: none;
+  }
+
+  .admin-topbar-account {
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-topbar {
+    padding: 0 12px;
+  }
+
+  .admin-topbar h2 {
+    max-width: 155px;
+    overflow: hidden;
+    font-size: .8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-topbar-account > div:last-child {
+    display: none;
+  }
+
+  .admin-content {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .admin-mobile-nav {
+    right: 6px;
+    left: 6px;
+  }
+
+  .admin-mobile-nav a {
+    padding-inline: 4px;
   }
 }
 

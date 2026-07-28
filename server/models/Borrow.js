@@ -41,6 +41,10 @@ const borrowSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
+    copyReserved: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

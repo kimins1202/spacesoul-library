@@ -5,10 +5,10 @@
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <!-- Logo -->
         <div class="flex-1 flex items-center gap-2">
-          <router-link to="/" class="flex items-center gap-2 group">
-            <img src="/spacesoul_logo.png" alt="Logo" class="w-8 h-8 group-hover:scale-110 transition-transform duration-300 rounded-full" />
-            <span class="text-xl md:text-2xl font-extrabold uppercase tracking-tighter text-[#1f3728] group-hover:text-green-800 transition-colors">
-              SPACESOUL
+          <router-link to="/" class="auth-brand flex items-center gap-3 group">
+            <span class="auth-brand-mark"><img src="/spacesoul_mark_v4_transparent.png" alt="Logo Spacesoul Library" /></span>
+            <span class="text-xl md:text-2xl font-extrabold uppercase tracking-tight text-[#1f3728] group-hover:text-green-800 transition-colors">
+              SPACESOUL LIBRARY
             </span>
           </router-link>
         </div>
@@ -59,7 +59,7 @@
     <footer class="bg-[#1b2a20] text-white pt-16 pb-8">
       <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/10 pb-12 mb-8">
         <div class="col-span-1 md:col-span-2">
-          <h2 class="text-xl font-extrabold uppercase tracking-tighter mb-4">SPACESOUL</h2>
+          <h2 class="text-xl font-extrabold uppercase tracking-tighter mb-4">SPACESOUL LIBRARY</h2>
           <p class="text-white/70 text-sm leading-relaxed max-w-sm">
             Hệ thống thư viện hiện đại kết hợp kiến trúc hữu cơ và công nghệ số hóa toàn diện.
           </p>
@@ -95,3 +95,9 @@
 import { useRoute } from 'vue-router'
 const route = useRoute()
 </script>
+
+<style scoped>
+.auth-brand-mark{width:48px;height:48px;display:grid;place-items:center;flex:0 0 auto}
+.auth-brand-mark img{width:100%;height:100%;object-fit:contain;transform:scale(1.32);transition:transform .25s}
+.auth-brand:hover .auth-brand-mark img{transform:scale(1.38)}
+</style>

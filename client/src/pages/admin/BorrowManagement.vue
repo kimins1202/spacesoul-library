@@ -36,7 +36,17 @@
 
     <!-- Table -->
     <div v-else class="overflow-x-auto flex-1">
-      <table class="w-full text-left border-collapse min-w-[1000px]">
+      <table class="borrow-table w-full text-left border-collapse min-w-[1080px]">
+        <colgroup>
+          <col class="reader-col">
+          <col class="book-col">
+          <col class="fee-col">
+          <col class="employee-col">
+          <col class="date-col">
+          <col class="date-col">
+          <col class="status-col">
+          <col class="actions-col">
+        </colgroup>
         <thead class="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm shadow-sm">
           <tr class="text-gray-500 text-xs uppercase tracking-wider">
             <th class="px-6 py-4 font-bold border-b border-gray-200">Độc giả</th>
@@ -46,12 +56,12 @@
             <th class="px-6 py-4 font-bold border-b border-gray-200">Ngày mượn</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Hạn trả</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Trạng thái</th>
-            <th class="px-6 py-4 font-bold text-right border-b border-gray-200">Thao tác</th>
+            <th class="action-column action-header px-2 py-4 font-bold text-center border-b border-gray-200">Thao tác</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-sm bg-white">
           <tr v-if="filteredBorrows.length === 0">
-            <td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không có phiếu mượn nào.</td>
+            <td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không có phiếu mượn nào.</td>
           </tr>
           <tr
             v-for="borrow in filteredBorrows"
@@ -70,8 +80,15 @@
               </div>
             </td>
             <td class="px-6 py-4">
-              <p class="font-bold text-gray-700 line-clamp-1">{{ borrow.book?.title || '—' }}</p>
-              <p class="text-[11px] text-gray-500">{{ borrow.book?.author }}</p>
+              <div class="borrow-book">
+                <div class="borrow-cover">
+                  <BookCover :src="borrow.book?.cover" :title="borrow.book?.title" :author="borrow.book?.author" />
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-gray-700 line-clamp-2">{{ borrow.book?.title || 'Sách không còn trong hệ thống' }}</p>
+                  <p class="text-[11px] text-gray-500 truncate">{{ borrow.book?.author || 'Không xác định' }}</p>
+                </div>
+              </div>
             </td>
             <td class="px-6 py-4 text-xs font-medium text-gray-800">
               {{ borrow.book?.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(borrow.book.price) : '—' }}
@@ -90,20 +107,23 @@
                 {{ statusLabel(borrow.status) }}
               </span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <div class="admin-row-actions flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <td class="action-column px-2 py-4">
+              <div class="admin-row-actions flex items-center justify-center gap-1.5">
                 <!-- Approve (pending) -->
-                <button v-if="borrow.status === 'pending'" @click="handleApprove(borrow._id)" class="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-colors" title="Phê duyệt">
+                <button v-if="borrow.status === 'pending'" @click="handleApprove(borrow._id)" class="action-button approve" title="Phê duyệt" aria-label="Phê duyệt yêu cầu">
                   <Check class="w-4 h-4" />
                 </button>
                 <!-- Reject (pending) -->
-                <button v-if="borrow.status === 'pending'" @click="handleCancel(borrow._id)" class="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="Từ chối">
+                <button v-if="borrow.status === 'pending'" @click="handleCancel(borrow._id)" class="action-button reject" title="Từ chối" aria-label="Từ chối yêu cầu">
                   <X class="w-4 h-4" />
                 </button>
                 <!-- Confirm return (pending-return) -->
-                <button v-if="borrow.status === 'pending-return'" @click="handleConfirmReturn(borrow._id)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="Xác nhận đã nhận sách trả">
+                <button v-if="borrow.status === 'pending-return'" @click="handleConfirmReturn(borrow._id)" class="action-button confirm-return" title="Xác nhận đã nhận sách trả" aria-label="Xác nhận trả sách">
                   <CornerDownLeft class="w-4 h-4" />
                 </button>
+                <span v-if="!['pending', 'pending-return'].includes(borrow.status)" class="processed-label" title="Đã xử lý" aria-label="Đã xử lý">
+                  <CheckCircle2 class="w-4 h-4" />
+                </span>
               </div>
             </td>
           </tr>
@@ -120,13 +140,11 @@ import {
   Check,
   X,
   CornerDownLeft,
-  Clock,
-  BookOpen,
-  AlertTriangle,
   CheckCircle2,
   Loader2
 } from 'lucide-vue-next'
 import { borrowService } from '@/services/borrow'
+import BookCover from '@/components/books/BookCover.vue'
 
 const borrows = ref([])
 const isLoading = ref(false)
@@ -191,6 +209,7 @@ const handleApprove = async (id) => {
     await borrowService.approveBorrowRequest(id)
     const b = borrows.value.find(x => x._id === id)
     if (b) b.status = 'borrowing'
+    window.dispatchEvent(new CustomEvent('borrow-status-changed'))
   } catch (err) { alert(err.message) }
 }
 
@@ -200,6 +219,7 @@ const handleCancel = async (id) => {
     await borrowService.cancelBorrowRequest(id)
     const b = borrows.value.find(x => x._id === id)
     if (b) b.status = 'cancelled'
+    window.dispatchEvent(new CustomEvent('borrow-status-changed'))
   } catch (err) { alert(err.message) }
 }
 
@@ -208,6 +228,7 @@ const handleConfirmReturn = async (id) => {
     await borrowService.confirmReturnBook(id)
     const b = borrows.value.find(x => x._id === id)
     if (b) b.status = 'returned'
+    window.dispatchEvent(new CustomEvent('borrow-status-changed'))
   } catch (err) { alert(err.message) }
 }
 
@@ -217,6 +238,99 @@ onMounted(loadBorrows)
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.borrow-table {
+  table-layout: fixed;
+}
+
+.action-button {
+  width: 30px;
+  min-height: 30px;
+  padding: 0;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid;
+  border-radius: 9px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.action-button.approve { background: #17643d !important; border-color: #0f4d2d !important; color: #fff !important; }
+.action-button.approve:hover { background: #0f4d2d !important; }
+.action-button.reject { background: #a63d38 !important; border-color: #84302c !important; color: #fff !important; }
+.action-button.reject:hover { background: #84302c !important; }
+.action-button.confirm-return { background: #285a86 !important; border-color: #1e476b !important; color: #fff !important; }
+.action-button.confirm-return:hover { background: #1e476b !important; }
+
+.action-column {
+  width: 88px;
+  min-width: 88px;
+  max-width: 88px;
+  background: #fff;
+  border-left: 1px solid #e2e7e2;
+}
+.reader-col { width: 190px; }
+.book-col { width: 180px; }
+.fee-col { width: 130px; }
+.employee-col { width: 130px; }
+.date-col { width: 115px; }
+.status-col { width: 125px; }
+.actions-col { width: 88px; }
+.action-header {
+  background: #e8ede8;
+  color: #263d30;
+}
+.processed-label {
+  width: 30px;
+  min-height: 30px;
+  padding: 0;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #cbd4cc;
+  border-radius: 9px;
+  background: #eef2ee;
+  color: #53645a;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.borrow-table th,
+.borrow-table td {
+  vertical-align: middle;
+  overflow: hidden;
+}
+.borrow-table th {
+  white-space: nowrap;
+}
+.borrow-table td p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.borrow-book {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.borrow-cover {
+  width: 42px;
+  height: 58px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid #dfe3de;
+  border-radius: 6px;
+  background: #edf0eb;
+  box-shadow: 0 3px 9px rgba(28,52,38,.1);
+}
+.admin-row-actions {
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 @media (hover: none), (max-width: 900px) {

@@ -70,7 +70,10 @@
         <main class="flex-1">
           <!-- Sorting & View Options -->
           <div class="flex justify-between items-center mb-6">
-            <p class="text-sm text-gray-500 font-medium">Hiển thị <span class="font-bold text-[#1f3728]">{{ filteredBooks.length }}</span> trên tổng số <span class="font-bold text-[#1f3728]">{{ books.length }}</span> sách</p>
+            <p class="text-sm text-gray-500 font-medium">
+              Hiển thị <span class="font-bold text-[#1f3728]">{{ displayRange }}</span>
+              trong <span class="font-bold text-[#1f3728]">{{ filteredBooks.length }}</span> kết quả
+            </p>
             <div class="flex items-center gap-3">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Sắp xếp theo</span>
               <select v-model="sortBy" class="bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#1f3728]">
@@ -84,13 +87,12 @@
           <!-- Books Grid -->
           <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
             <router-link 
-              v-for="book in sortedBooks" 
+              v-for="book in paginatedBooks"
               :key="book._id" 
               :to="'/books/' + book._id" 
               class="group flex flex-col bg-white rounded-2xl p-3 border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300">
               <div class="relative rounded-xl overflow-hidden aspect-[3/4] mb-4 bg-gray-100">
-                <img v-if="book.cover" :src="book.cover" :alt="`Bìa sách ${book.title}`" @error="useCoverFallback" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div v-else class="w-full h-full flex items-center justify-center text-gray-400">No cover</div>
+                <BookCover :src="book.cover" :title="book.title" :author="book.author" />
                 <div v-if="book.availableCopies > 0" class="absolute top-2 right-2 bg-[#1f3728] text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm">Sẵn có</div>
                 <div v-else class="absolute top-2 right-2 bg-gray-500/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm">Đang mượn</div>
               </div>
@@ -109,12 +111,20 @@
           </div>
 
           <!-- Pagination -->
-          <div v-if="filteredBooks.length > 0" class="mt-12 flex justify-center items-center gap-2">
-            <button class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-[#1f3728] hover:border-[#1f3728] transition-colors cursor-not-allowed opacity-50">
+          <div v-if="totalPages > 1" class="mt-12 flex justify-center items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-[#1f3728] hover:border-[#1f3728] transition-colors disabled:cursor-not-allowed disabled:opacity-40">
               <ChevronLeft class="w-4 h-4" />
             </button>
-            <button class="w-10 h-10 flex items-center justify-center rounded-xl border border-[#1f3728] bg-[#1f3728] text-white font-bold text-sm shadow-sm transition-colors">1</button>
-            <button class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-[#1f3728] hover:border-[#1f3728] transition-colors">
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              :class="['w-10 h-10 flex items-center justify-center rounded-xl border font-bold text-sm transition-colors',
+                currentPage === page
+                  ? 'border-[#1f3728] bg-[#1f3728] text-white shadow-sm'
+                  : 'border-gray-200 bg-white text-gray-600 hover:text-[#1f3728] hover:border-[#1f3728]']">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-[#1f3728] hover:border-[#1f3728] transition-colors disabled:cursor-not-allowed disabled:opacity-40">
               <ChevronRight class="w-4 h-4" />
             </button>
           </div>
@@ -125,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { 
   Search,
@@ -134,7 +144,7 @@ import {
   ChevronRight
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
-import { useCoverFallback } from '@/utils/imageFallback'
+import BookCover from '@/components/books/BookCover.vue'
 
 const books = ref([])
 const categories = ref([])
@@ -142,6 +152,8 @@ const searchQuery = ref('')
 const selectedCategory = ref('')
 const selectedStatus = ref('all')
 const sortBy = ref('newest')
+const currentPage = ref(1)
+const pageSize = 8
 const route = useRoute()
 
 const formatCurrency = (value) => {
@@ -200,6 +212,32 @@ const sortedBooks = computed(() => {
     result.sort((a, b) => a.price - b.price)
   }
   return result
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(sortedBooks.value.length / pageSize)))
+const paginatedBooks = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return sortedBooks.value.slice(start, start + pageSize)
+})
+const displayRange = computed(() => {
+  if (!filteredBooks.value.length) return '0'
+  const start = (currentPage.value - 1) * pageSize + 1
+  const end = Math.min(start + pageSize - 1, filteredBooks.value.length)
+  return `${start}–${end}`
+})
+const visiblePages = computed(() => {
+  if (totalPages.value <= 5) return Array.from({ length: totalPages.value }, (_, index) => index + 1)
+  const start = Math.min(Math.max(currentPage.value - 2, 1), totalPages.value - 4)
+  return Array.from({ length: 5 }, (_, index) => start + index)
+})
+
+const goToPage = (page) => {
+  currentPage.value = Math.min(Math.max(page, 1), totalPages.value)
+  window.scrollTo({ top: 250, behavior: 'smooth' })
+}
+
+watch([searchQuery, selectedCategory, selectedStatus, sortBy], () => {
+  currentPage.value = 1
 })
 
 onMounted(() => {

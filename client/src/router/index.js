@@ -48,7 +48,8 @@ const routes = [
       {
         path: 'profile',
         name: 'profile',
-        component: Profile
+        component: Profile,
+        meta: { requiresReader: true }
       },
       {
         path: 'borrowed',
@@ -110,6 +111,11 @@ const routes = [
         path: 'borrows',
         name: 'admin-borrows',
         component: BorrowManagement
+      },
+      {
+        path: 'profile',
+        name: 'admin-profile',
+        component: Profile
       }
     ]
   },
@@ -133,7 +139,13 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const userStr = localStorage.getItem('user')
-  const user = userStr ? JSON.parse(userStr) : null
+  let user = null
+  try {
+    user = userStr ? JSON.parse(userStr) : null
+  } catch {
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
+  }
 
   // Require employee (nhân viên / admin) for admin routes
   if (to.matched.some(record => record.meta.requiresEmployee)) {
@@ -146,6 +158,20 @@ router.beforeEach((to, from, next) => {
     if (!token || !user || user.type === 'Employee') {
       return next('/login')
     }
+  }
+
+  const userPortalRoutes = new Set([
+    'home',
+    'book-list',
+    'book-detail',
+    'profile',
+    'borrowed-books',
+    'guide',
+    'contact'
+  ])
+
+  if (user?.type === 'Employee' && userPortalRoutes.has(to.name)) {
+    return next('/admin/dashboard')
   }
 
   next()

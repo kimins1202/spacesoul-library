@@ -54,14 +54,14 @@
     <!-- Table -->
     <div v-else class="overflow-x-auto flex-1">
       <!-- READERS TAB -->
-      <table v-if="activeTab === 'readers'" class="w-full text-left border-collapse min-w-[700px]">
+      <table v-if="activeTab === 'readers'" class="user-admin-table w-full text-left border-collapse min-w-[1100px]">
         <thead class="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm shadow-sm">
           <tr class="text-gray-500 text-xs uppercase tracking-wider">
             <th class="px-6 py-4 font-bold border-b border-gray-200">Độc giả</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Ngày sinh / Giới tính</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Số điện thoại</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Trạng thái</th>
-            <th class="px-6 py-4 font-bold text-right border-b border-gray-200">Thao tác</th>
+            <th class="action-column-header px-5 py-4 font-bold text-center border-b border-gray-200">Thao tác</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-sm bg-white">
@@ -95,13 +95,15 @@
                 {{ reader.status === 'active' ? 'Hoạt động' : 'Bị khóa' }}
               </span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button @click="handleToggleStatus(reader)" :class="['p-1.5 rounded-lg transition-colors', reader.status === 'active' ? 'text-orange-600 hover:bg-orange-100' : 'text-green-600 hover:bg-green-100']" :title="reader.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa'">
+            <td class="action-column-cell px-5 py-4">
+              <div class="admin-row-actions flex items-center justify-end gap-2">
+                <button @click="handleToggleStatus(reader)" :class="['row-action', reader.status === 'active' ? 'lock-action' : 'unlock-action']" :title="reader.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa'" :aria-label="reader.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'">
                   <Lock class="w-4 h-4" v-if="reader.status === 'active'" />
                   <Unlock class="w-4 h-4" v-else />
                 </button>
-                <button @click="handleDeleteReader(reader._id)" class="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><Trash2 class="w-4 h-4" /></button>
+                <button @click="handleDeleteReader(reader._id)" class="row-action delete-action" title="Xóa người dùng" aria-label="Xóa người dùng">
+                  <Trash2 class="w-4 h-4" />
+                </button>
               </div>
             </td>
           </tr>
@@ -109,14 +111,14 @@
       </table>
 
       <!-- EMPLOYEES TAB -->
-      <table v-else class="w-full text-left border-collapse min-w-[700px]">
+      <table v-else class="user-admin-table w-full text-left border-collapse min-w-[820px]">
         <thead class="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm shadow-sm">
           <tr class="text-gray-500 text-xs uppercase tracking-wider">
             <th class="px-6 py-4 font-bold border-b border-gray-200">Nhân viên</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Chức vụ</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Số điện thoại</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Trạng thái</th>
-            <th class="px-6 py-4 font-bold text-right border-b border-gray-200">Thao tác</th>
+            <th class="action-column-header px-5 py-4 font-bold text-center border-b border-gray-200">Thao tác</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-sm bg-white">
@@ -150,9 +152,11 @@
                 {{ emp.status === 'active' ? 'Hoạt động' : 'Bị khóa' }}
               </span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button @click="handleDeleteEmployee(emp._id)" class="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><Trash2 class="w-4 h-4" /></button>
+            <td class="action-column-cell px-5 py-4">
+              <div class="admin-row-actions flex items-center justify-end gap-2">
+                <button @click="handleDeleteEmployee(emp._id)" class="row-action delete-action" title="Xóa nhân viên" aria-label="Xóa nhân viên">
+                  <Trash2 class="w-4 h-4" />
+                </button>
               </div>
             </td>
           </tr>
@@ -311,4 +315,48 @@ const handleCreateEmployee = async () => {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.row-action {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.lock-action { border-color: #9a651b; background: #a96d1d; color: #fff; }
+.lock-action:hover { background: #825114; }
+.unlock-action { border-color: #185637; background: #1f6a43; color: #fff; }
+.unlock-action:hover { background: #174f34; }
+.delete-action { border-color: #84302c; background: #a63d38; color: #fff; }
+.delete-action:hover { background: #84302c; }
+
+.user-admin-table th,
+.user-admin-table td {
+  vertical-align: middle;
+}
+.user-admin-table th {
+  white-space: nowrap;
+}
+.user-admin-table th:last-child,
+.user-admin-table td:last-child {
+  width: 112px;
+  min-width: 112px;
+}
+.admin-row-actions {
+  min-width: 0;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+.action-column-header { background: #e8ede8; color: #263d30; }
+.action-column-cell { border-left: 1px solid #e2e7e2; background: #fff; }
+</style>
 

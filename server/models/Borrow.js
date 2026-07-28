@@ -19,7 +19,7 @@ const borrowSchema = new mongoose.Schema(
     },
     borrowDate: {
       type: Date,
-      default: Date.now,
+      default: null,
     },
     dueDate: {
       type: Date,

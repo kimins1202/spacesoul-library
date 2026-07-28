@@ -1,51 +1,42 @@
 <template>
   <div class="home-page">
     <section class="hero">
-      <div class="hero-orb hero-orb-one"></div>
-      <div class="hero-orb hero-orb-two"></div>
-      <div class="hero-grid"></div>
-
       <div class="hero-inner">
         <div class="hero-copy">
-          <div class="eyebrow"><Sparkles class="w-4 h-4" /> Không gian đọc dành cho bạn</div>
-          <h1>Mỗi cuốn sách mở ra một <span>vũ trụ mới.</span></h1>
+          <span class="hero-label"><Library class="w-4 h-4" /> Thư viện Spacesoul</span>
+          <h1>Khám phá Tri thức Việt</h1>
           <p>
-            Khám phá kho sách được tuyển chọn từ văn học, kỹ năng, khoa học đến
-            công nghệ. Tìm sách nhanh, đăng ký mượn dễ dàng và theo dõi ngay trên Spacesoul.
+            Hành trình tìm kiếm cảm hứng bắt đầu từ những trang sách.
+            Khám phá kho tàng tri thức đa dạng từ văn học nghệ thuật đến công nghệ hiện đại.
           </p>
 
           <form class="hero-search" @submit.prevent="goToBooks">
-            <Search class="w-5 h-5" />
-            <input v-model="searchQuery" aria-label="Tìm kiếm sách" placeholder="Tìm theo tên sách hoặc tác giả..." />
-            <button type="submit">Tìm sách <ArrowRight class="w-4 h-4" /></button>
+            <div class="search-field">
+              <Search class="w-4 h-4" />
+              <input v-model="searchQuery" aria-label="Tìm kiếm sách" placeholder="Tìm tên sách hoặc tác giả..." />
+            </div>
+            <select v-model="selectedCategory" aria-label="Chọn thể loại">
+              <option value="">Tất cả thể loại</option>
+              <option value="vanhoc">Văn học</option>
+              <option value="kynang">Kỹ năng</option>
+              <option value="khoahoc">Khoa học</option>
+              <option value="congnghe">Công nghệ</option>
+              <option value="taichinh">Tài chính</option>
+              <option value="thieunhi">Thiếu nhi</option>
+            </select>
+            <select v-model="selectedStatus" aria-label="Chọn trạng thái">
+              <option value="all">Trạng thái: Tất cả</option>
+              <option value="available">Sách còn sẵn</option>
+              <option value="borrowed">Đang được mượn</option>
+            </select>
+            <button type="submit"><Filter class="w-4 h-4" /> Lọc kết quả</button>
           </form>
 
           <div class="quick-links">
-            <span>Tìm nhanh:</span>
-            <button v-for="item in quickSearches" :key="item" @click="searchFor(item)">{{ item }}</button>
+            <span>Tìm kiếm phổ biến</span>
+            <button v-for="item in quickSearches" :key="item" type="button" @click="searchFor(item)">{{ item }}</button>
           </div>
         </div>
-
-        <div class="hero-visual" aria-hidden="true">
-          <div class="visual-note">
-            <span class="note-icon"><Quote class="w-4 h-4" /></span>
-            <p>“Một căn phòng không có sách cũng như một cơ thể không có linh hồn.”</p>
-            <small>— Marcus Tullius Cicero</small>
-          </div>
-          <div class="book-stack">
-            <div class="book book-one"><span>VĂN HỌC</span></div>
-            <div class="book book-two"><span>KHÁM PHÁ</span></div>
-            <div class="book book-three"><span>TRI THỨC</span></div>
-          </div>
-          <div class="floating-chip"><BookOpen class="w-4 h-4" /> Hơn 1.200 đầu sách</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="stats-wrap">
-      <div v-for="stat in stats" :key="stat.label" class="stat-item">
-        <component :is="stat.icon" class="w-5 h-5" />
-        <div><strong>{{ stat.value }}</strong><span>{{ stat.label }}</span></div>
       </div>
     </section>
 
@@ -65,7 +56,7 @@
       <div v-else-if="featuredBooks.length" class="book-grid">
         <router-link v-for="book in featuredBooks" :key="book._id" :to="`/books/${book._id}`" class="featured-card">
           <div class="cover-wrap">
-            <img v-if="book.cover" :src="book.cover" :alt="`Bìa sách ${book.title}`" />
+            <img v-if="book.cover" :src="book.cover" :alt="`Bìa sách ${book.title}`" @error="useCoverFallback" />
             <div v-else class="cover-placeholder"><BookOpen class="w-10 h-10" /></div>
             <span :class="['availability', { unavailable: !book.availableCopies }]">
               {{ book.availableCopies ? `Còn ${book.availableCopies} cuốn` : 'Đang hết sách' }}
@@ -77,7 +68,7 @@
             <p>{{ book.author }}</p>
             <div class="book-meta">
               <span>{{ book.publishYear || 'Đang cập nhật' }}</span>
-              <span>{{ formatCurrency(book.price) }}đ / lượt</span>
+              <span>{{ formatCurrency(book.price) }} đ / lượt</span>
             </div>
           </div>
         </router-link>
@@ -127,14 +118,17 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  ArrowRight, ArrowUpRight, BookOpen, BrainCircuit, FlaskConical, Heart,
-  Library, Quote, Search, Sparkles, Users, WalletCards
+  ArrowRight, ArrowUpRight, BookOpen, BrainCircuit, Filter, FlaskConical,
+  Heart, Library, Search, Users, WalletCards
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
+import { useCoverFallback } from '@/utils/imageFallback'
 
 const router = useRouter()
 const books = ref([])
 const searchQuery = ref('')
+const selectedCategory = ref('')
+const selectedStatus = ref('all')
 const isLoading = ref(true)
 const quickSearches = ['Văn học', 'Kỹ năng', 'Công nghệ']
 
@@ -168,7 +162,13 @@ const categoryLabel = value => ({
   taichinh: 'Tài chính', congnghe: 'Công nghệ', thieunhi: 'Thiếu nhi'
 }[value] || value || 'Sách')
 
-const goToBooks = () => router.push({ path: '/books', query: searchQuery.value ? { q: searchQuery.value } : {} })
+const goToBooks = () => {
+  const query = {}
+  if (searchQuery.value.trim()) query.q = searchQuery.value.trim()
+  if (selectedCategory.value) query.category = selectedCategory.value
+  if (selectedStatus.value !== 'all') query.status = selectedStatus.value
+  router.push({ path: '/books', query })
+}
 const searchFor = value => router.push({ path: '/books', query: { q: value } })
 
 onMounted(async () => {
@@ -185,21 +185,22 @@ onMounted(async () => {
 
 <style scoped>
 .home-page { background: #f8f7f2; color: #17372d; }
-.hero { position: relative; overflow: hidden; min-height: 650px; background: #12372d; color: white; }
-.hero-grid { position: absolute; inset: 0; opacity: .12; background-image: linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to right, #000, transparent); }
-.hero-orb { position: absolute; border-radius: 999px; filter: blur(2px); }
-.hero-orb-one { width: 420px; height: 420px; right: 7%; top: 4%; background: rgba(221, 171, 81, .18); }
-.hero-orb-two { width: 240px; height: 240px; left: -80px; bottom: -100px; background: rgba(118, 168, 135, .2); }
-.hero-inner { position: relative; z-index: 2; max-width: 1240px; min-height: 650px; margin: auto; padding: 96px 28px 84px; display: grid; grid-template-columns: 1.08fr .92fr; align-items: center; gap: 72px; }
-.eyebrow, .section-kicker { display: inline-flex; align-items: center; gap: 8px; color: #d8b66a; font-size: .76rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
-.hero h1 { max-width: 700px; margin: 20px 0 22px; font-size: clamp(3rem, 6vw, 5.3rem); line-height: .98; letter-spacing: -.055em; }
-.hero h1 span { color: #e7c87e; }
-.hero-copy > p { max-width: 650px; color: rgba(255,255,255,.72); font-size: 1.03rem; line-height: 1.85; }
-.hero-search { max-width: 680px; margin-top: 34px; padding: 8px 8px 8px 18px; display: flex; align-items: center; gap: 10px; background: white; color: #17372d; border-radius: 16px; box-shadow: 0 22px 60px rgba(0,0,0,.22); }
-.hero-search input { min-width: 0; flex: 1; border: 0; outline: 0; padding: 10px 4px; font: inherit; color: #17372d; }
-.hero-search button, .guide-link { display: inline-flex; align-items: center; gap: 8px; padding: 13px 20px; border: 0; border-radius: 11px; background: #d9aa4e; color: #17372d; font-weight: 800; cursor: pointer; }
-.quick-links { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: rgba(255,255,255,.5); font-size: .78rem; }
-.quick-links button { border: 1px solid rgba(255,255,255,.18); border-radius: 99px; padding: 5px 10px; background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); cursor: pointer; }
+.hero { position: relative; overflow: hidden; min-height: 430px; color: #17372d; background: linear-gradient(180deg, #f5f2ea 0%, #fbfaf6 100%); border-bottom: 1px solid #e7e2d7; }
+.hero::before { content: ""; position: absolute; inset: 0; opacity: .45; background: radial-gradient(circle at 50% -30%, rgba(45, 86, 61, .14), transparent 38rem); }
+.hero-inner { position: relative; z-index: 2; max-width: 1240px; min-height: 430px; margin: auto; padding: 80px 28px 54px; display: flex; align-items: center; justify-content: center; }
+.hero-copy { width: 100%; text-align: center; }
+.hero-label { display: inline-flex; align-items: center; gap: 7px; color: #7c6942; font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.section-kicker { display: inline-flex; align-items: center; gap: 8px; color: #b48535; font-size: .76rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.hero h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.08; letter-spacing: -.045em; color: #1f4935; }
+.hero-copy > p { max-width: 720px; margin: 0 auto; color: #657169; font-size: .92rem; line-height: 1.75; }
+.hero-search { width: 100%; margin: 34px auto 0; padding: 7px; display: grid; grid-template-columns: minmax(260px, 1fr) 180px 190px auto; align-items: center; gap: 7px; border: 1px solid #dfdbd1; background: rgba(255,255,255,.96); border-radius: 13px; box-shadow: 0 15px 40px rgba(32, 57, 42, .08); text-align: left; }
+.search-field { min-width: 0; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #809087; }
+.hero-search input, .hero-search select { width: 100%; border: 0; outline: 0; padding: 11px 8px; background: transparent; color: #37443c; font-size: .78rem; }
+.hero-search select { border-left: 1px solid #e7e3da; cursor: pointer; }
+.hero-search button, .guide-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 9px; background: #254f3a; color: white; font-weight: 800; font-size: .76rem; cursor: pointer; }
+.hero-search button:hover { background: #173a29; }
+.quick-links { margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; align-items: center; color: #8a948d; font-size: .7rem; }
+.quick-links button { border: 1px solid #ddd8cc; border-radius: 99px; padding: 5px 10px; background: rgba(255,255,255,.7); color: #536359; cursor: pointer; }
 .hero-visual { position: relative; min-height: 450px; }
 .book-stack { position: absolute; right: 9%; bottom: 18px; width: 290px; height: 390px; transform: rotate(3deg); }
 .book { position: absolute; bottom: 0; width: 210px; height: 340px; padding: 26px; display: flex; align-items: flex-end; border-radius: 8px 16px 16px 8px; box-shadow: -14px 22px 42px rgba(0,0,0,.32), inset 8px 0 rgba(255,255,255,.1); font-weight: 800; letter-spacing: .18em; }
@@ -260,19 +261,22 @@ onMounted(async () => {
 .guide-link { width: max-content; grid-column: 1; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 @media (max-width: 960px) {
-  .hero-inner { grid-template-columns: 1fr; padding-top: 75px; }
+  .hero-inner { padding-top: 70px; }
   .hero-visual { display: none; }
+  .hero-search { grid-template-columns: 1fr 1fr; }
+  .search-field { grid-column: 1 / -1; }
+  .hero-search button { width: 100%; }
   .book-grid, .category-grid { grid-template-columns: repeat(2, 1fr); }
   .reading-cta { grid-template-columns: 1fr; gap: 40px; }
   .guide-link { grid-column: auto; }
 }
 @media (max-width: 640px) {
   .hero { min-height: auto; }
-  .hero-inner { min-height: auto; padding: 70px 20px 78px; }
-  .hero h1 { font-size: 3.25rem; }
-  .hero-search { align-items: stretch; flex-wrap: wrap; }
-  .hero-search input { width: calc(100% - 40px); }
-  .hero-search button { width: 100%; justify-content: center; }
+  .hero-inner { min-height: auto; padding: 62px 20px 48px; }
+  .hero h1 { font-size: 2.55rem; }
+  .hero-search { grid-template-columns: 1fr; }
+  .search-field, .hero-search select { grid-column: auto; }
+  .hero-search select { border-left: 0; border-top: 1px solid #e7e3da; }
   .stats-wrap { margin: 0; padding: 20px; grid-template-columns: repeat(2, 1fr); border-radius: 0; }
   .stat-item { padding: 10px; border: 0; justify-content: flex-start; }
   .section-shell { padding: 72px 20px; }

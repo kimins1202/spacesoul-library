@@ -53,6 +53,25 @@ const bookSchema = new mongoose.Schema(
       type: Number,
       default: 0.0,
     },
+    isbn: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    pages: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    language: {
+      type: String,
+      default: "Tiếng Việt",
+    },
+    shelfLocation: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   {
     timestamps: true,

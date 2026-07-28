@@ -5,6 +5,9 @@ const Employee = require("../models/Employee");
 
 const createBorrowRequest = async (req, res) => {
   try {
+    if (req.userType !== "Reader") {
+      return res.status(403).json({ message: "Chỉ độc giả mới có thể gửi yêu cầu mượn sách" });
+    }
     const { bookId } = req.body;
     // Kiểm tra xem sách có tồn tại không
     const bookRecord = await Book.findById(bookId);
@@ -18,7 +21,6 @@ const createBorrowRequest = async (req, res) => {
     // Kiểm tra xem người dùng có đang mượn sách quá hạn không
     const overdueBorrow = await Borrow.findOne({
       reader: req.user._id,
-      book: bookId,
       status: "overdue",
     });
 
@@ -66,8 +68,12 @@ const createBorrowRequest = async (req, res) => {
 // Lấy danh sách yêu cầu mượn sách của người dùng hiện tại
 const getMyBorrows = async (req, res) => {
   try {
+    if (req.userType !== "Reader") {
+      return res.status(403).json({ message: "Chỉ độc giả mới có lịch sử mượn cá nhân" });
+    }
     const borrows = await Borrow.find({ reader: req.user._id })
-      .populate("book", "title author cover category")
+      .populate("book", "title author cover category price publishYear totalCopies availableCopies")
+      .populate("employee", "firstName lastName")
       .sort({ createdAt: -1 });
     res.status(200).json(borrows);
   } catch (error) {
@@ -81,7 +87,7 @@ const getAllBorrows = async (req, res) => {
     const borrows = await Borrow.find()
       .populate("reader", "firstName lastName email")
       .populate("employee", "firstName lastName")
-      .populate("book", "title author cover category")
+      .populate("book", "title author cover category price publishYear totalCopies availableCopies")
       .sort({ createdAt: -1 });
     res.status(200).json(borrows);
   } catch (error) {
@@ -132,6 +138,9 @@ const requestReturnBook = async (req, res) => {
     const borrow = await Borrow.findById(req.params.id);
     if (!borrow) {
       return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
+    }
+    if (req.userType !== "Reader" || borrow.reader.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Bạn không có quyền trả phiếu mượn này" });
     }
     // Kiểm tra trạng thái yêu cầu mượn
     if (borrow.status !== "borrowing" && borrow.status !== "overdue") {
@@ -184,6 +193,11 @@ const cancelBorrowRequest = async (req, res) => {
     const borrow = await Borrow.findById(req.params.id);
     if (!borrow) {
       return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
+    }
+    const isOwner = req.userType === "Reader" && borrow.reader.toString() === req.user._id.toString();
+    const isEmployee = req.userType === "Employee";
+    if (!isOwner && !isEmployee) {
+      return res.status(403).json({ message: "Bạn không có quyền hủy yêu cầu này" });
     }
     // Kiểm tra trạng thái yêu cầu mượn
     if (borrow.status !== "pending") {

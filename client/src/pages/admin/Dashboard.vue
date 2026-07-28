@@ -1,9 +1,20 @@
 <template>
-  <div class="space-y-6">
+  <div class="admin-dashboard space-y-6">
+    <section class="dashboard-welcome">
+      <div>
+        <span class="welcome-label">Không gian vận hành thư viện</span>
+        <h1>Chào mừng trở lại, {{ adminDisplayName }}</h1>
+        <p>Theo dõi kho sách, yêu cầu mượn và hoạt động bạn đọc trong một màn hình.</p>
+      </div>
+      <div class="system-status">
+        <span></span>
+        Hệ thống hoạt động ổn định
+      </div>
+    </section>
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Total Books -->
-      <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+      <div class="metric-card bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
         <div class="flex justify-between items-start">
           <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tổng số sách</h3>
           <div class="w-8 h-8 rounded-md bg-[#e2eadb] flex items-center justify-center text-[#1f3728]">
@@ -16,7 +27,7 @@
       </div>
 
       <!-- Pending Requests -->
-      <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+      <div class="metric-card bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
         <div class="flex justify-between items-start">
           <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Yêu cầu chờ duyệt</h3>
           <div class="w-8 h-8 rounded-md bg-red-100 flex items-center justify-center text-red-600">
@@ -32,7 +43,7 @@
       </div>
 
       <!-- Active Users -->
-      <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+      <div class="metric-card bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
         <div class="flex justify-between items-start">
           <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tổng độc giả</h3>
           <div class="w-8 h-8 rounded-md bg-[#e2eadb] flex items-center justify-center text-[#1f3728]">
@@ -48,7 +59,7 @@
     <!-- Middle Section: Chart & Featured Book -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Chart -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+      <div class="dashboard-panel lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-lg font-bold text-[#1f3728]">Xu hướng mượn sách</h3>
           <select class="text-xs font-medium border border-gray-200 rounded px-2 py-1 outline-none">
@@ -63,7 +74,7 @@
       </div>
 
       <!-- Featured Book Card -->
-      <div class="bg-[#2c4c3b] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden text-white shadow-md">
+      <div class="featured-panel bg-[#2c4c3b] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden text-white shadow-md">
         <!-- Background Icon -->
         <BookOpen class="absolute -right-4 -bottom-4 w-40 h-40 text-white/5" />
         
@@ -81,7 +92,7 @@
     </div>
 
     <!-- Bottom Section: Recent Borrows Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="dashboard-panel bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       <div class="flex justify-between items-center p-6 border-b border-gray-100">
         <h3 class="text-lg font-bold text-[#1f3728]">Yêu cầu mượn gần đây</h3>
         <router-link to="/admin/borrows" class="text-sm font-semibold text-[#1f3728] hover:underline">Xem tất cả</router-link>
@@ -144,8 +155,12 @@ import { Library, Hourglass, UserCheck, TrendingUp, AlertCircle, ArrowUp, CheckC
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
 import dashboardService from '@/services/dashboard'
+import { authService } from '@/services/auth'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+
+const currentAdmin = authService.getCurrentUser()
+const adminDisplayName = currentAdmin?.firstName || 'Quản trị viên'
 
 const statusLabel = (status) => {
   const map = { pending: 'Chờ duyệt', borrowing: 'Đang mượn', 'pending-return': 'Chờ trả', returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy' }
@@ -213,6 +228,110 @@ onMounted(() => {
 
 <style scoped>
 .font-title {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.dashboard-welcome {
+  min-height: 150px;
+  padding: 30px 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 20px;
+  color: white;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(224, 189, 112, .23), transparent 20rem),
+    linear-gradient(135deg, #15392a, #214b37);
+  box-shadow: 0 18px 40px rgba(20, 53, 38, .15);
+}
+
+.welcome-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #dfbd75;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.dashboard-welcome h1 {
+  margin-bottom: 6px;
+  font-size: clamp(1.5rem, 3vw, 2.15rem);
+  letter-spacing: -.035em;
+}
+
+.dashboard-welcome p {
+  color: rgba(255,255,255,.62);
+  font-size: .84rem;
+}
+
+.system-status {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.76);
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.system-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7ee2a0;
+  box-shadow: 0 0 0 4px rgba(126,226,160,.13);
+}
+
+.metric-card,
+.dashboard-panel {
+  border-color: rgba(31,55,40,.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(23,55,43,.055);
+}
+
+.metric-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.metric-card::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  bottom: -42px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(31,55,40,.035);
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(23,55,43,.09);
+}
+
+.featured-panel {
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 100%, rgba(224,189,112,.22), transparent 15rem),
+    linear-gradient(145deg, #244e39, #173527);
+  box-shadow: 0 16px 36px rgba(23,55,43,.16);
+}
+
+@media (max-width: 767px) {
+  .dashboard-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 24px;
+  }
 }
 </style>

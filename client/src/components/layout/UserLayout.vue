@@ -1,13 +1,15 @@
 <template>
-  <div class="min-h-screen flex flex-col font-sans bg-[#fbfbfb] text-[#1f3728]">
+  <div class="user-shell min-h-screen flex flex-col font-sans bg-[#fbfbfb] text-[#1f3728]">
     <!-- Header / Navbar -->
-    <header class="sticky top-0 z-50 bg-white/98 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between gap-4">
+    <header class="user-header sticky top-0 z-50 bg-white/98 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
+      <div class="max-w-7xl mx-auto px-6 h-[76px] flex items-center justify-between gap-4">
         <!-- Logo -->
         <div class="flex items-center gap-2 flex-shrink-0">
           <router-link to="/" class="flex items-center gap-2 group">
-            <img src="/spacesoul_logo.png" alt="Logo" class="w-7 h-7 group-hover:scale-110 transition-transform duration-300 rounded-full" />
-            <span class="text-lg font-extrabold uppercase tracking-tighter text-[#1f3728] group-hover:text-green-800 transition-colors">
+            <span class="brand-mark">
+              <img src="/spacesoul_logo.png" alt="Logo Spacesoul" class="w-7 h-7 group-hover:scale-110 transition-transform duration-300 rounded-full" />
+            </span>
+            <span class="text-lg font-extrabold uppercase tracking-[0.04em] text-[#1f3728] group-hover:text-green-800 transition-colors">
               SPACESOUL
             </span>
           </router-link>
@@ -26,6 +28,12 @@
             Danh mục
             <span class="absolute -bottom-0.5 left-0 w-full h-[2px] bg-[#1f3728] transition-transform duration-300 origin-left"
               :class="route.path.startsWith('/books') ? 'scale-x-100' : 'scale-x-0'"></span>
+          </router-link>
+          <router-link v-if="isLoggedIn && !isEmployee" to="/borrowed" class="text-[11px] font-bold uppercase tracking-wider transition-colors relative py-1 group"
+            :class="route.path.startsWith('/borrowed') ? 'text-[#1f3728]' : 'text-gray-500 hover:text-[#1f3728]'">
+            Yêu cầu mượn
+            <span class="absolute -bottom-0.5 left-0 w-full h-[2px] bg-[#1f3728] transition-transform duration-300 origin-left"
+              :class="route.path.startsWith('/borrowed') ? 'scale-x-100' : 'scale-x-0'"></span>
           </router-link>
           <router-link to="/guide" class="text-[11px] font-bold uppercase tracking-wider transition-colors relative py-1 group"
             :class="route.path.startsWith('/guide') ? 'text-[#1f3728]' : 'text-gray-500 hover:text-[#1f3728]'">
@@ -72,26 +80,28 @@
           </div>
 
           <!-- User Dropdown -->
-          <div v-if="isLoggedIn" class="relative group cursor-pointer">
-            <button class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-all">
+          <div v-if="isLoggedIn" class="relative">
+            <button @click="showUserMenu = !showUserMenu" :aria-expanded="showUserMenu" aria-label="Mở menu tài khoản"
+              class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-all">
               <div class="w-7 h-7 rounded-full bg-[#1f3728] text-white flex items-center justify-center text-xs font-bold">
                 {{ userInitial }}
               </div>
               <span class="hidden sm:block text-xs font-bold text-gray-700 max-w-[80px] truncate">{{ userName }}</span>
-              <ChevronDown class="w-3.5 h-3.5 text-gray-400" />
+              <ChevronDown :class="['w-3.5 h-3.5 text-gray-400 transition-transform', { 'rotate-180': showUserMenu }]" />
             </button>
             <!-- Dropdown -->
-            <div class="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 py-1 overflow-hidden z-[60]">
+            <div v-if="showUserMenu"
+              class="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl py-1 overflow-hidden z-[60] animate-fade-in">
               <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
                 <p class="text-sm font-bold text-[#1f3728] truncate">{{ userName }}</p>
                 <p class="text-[11px] text-gray-500 truncate mt-0.5">{{ currentUser?.email }}</p>
               </div>
               <div class="p-1.5 space-y-0.5">
-                <router-link to="/profile" class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#1f3728] font-medium rounded-xl transition-colors">
+                <router-link to="/profile" @click="showUserMenu = false" class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#1f3728] font-medium rounded-xl transition-colors">
                   <UserCircle class="w-4 h-4" /> Hồ sơ cá nhân
                 </router-link>
-                <router-link to="/borrowed" class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#1f3728] font-medium rounded-xl transition-colors">
-                  <BookOpen class="w-4 h-4" /> Sách đã mượn
+                <router-link to="/borrowed" @click="showUserMenu = false" class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#1f3728] font-medium rounded-xl transition-colors">
+                  <BookOpen class="w-4 h-4" /> Yêu cầu mượn của tôi
                 </router-link>
                 <div class="h-px bg-gray-100 mx-2 my-1"></div>
                 <button @click="handleLogout" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 font-medium rounded-xl transition-colors">
@@ -106,7 +116,7 @@
             <router-link to="/login" class="text-xs font-bold px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:border-[#1f3728] hover:text-[#1f3728] transition-all">
               Đăng nhập
             </router-link>
-            <router-link to="/register" class="text-xs font-bold px-4 py-2 rounded-xl bg-[#1f3728] text-white hover:bg-[#16241c] transition-colors">
+            <router-link to="/register" class="register-link text-xs font-bold px-4 py-2 rounded-xl bg-[#1f3728] hover:bg-[#16241c] transition-colors">
               Đăng ký
             </router-link>
           </div>
@@ -152,7 +162,7 @@
               class="flex items-start gap-3 p-4 hover:bg-gray-50/50 transition-colors group">
               <!-- Cover -->
               <div class="w-14 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 shadow-sm">
-                <img v-if="item.cover" :src="item.cover" :alt="item.title" class="w-full h-full object-cover" />
+                <img v-if="item.cover" :src="item.cover" :alt="item.title" @error="useCoverFallback" class="w-full h-full object-cover" />
                 <div v-else class="w-full h-full flex items-center justify-center">
                   <BookOpen class="w-6 h-6 text-gray-300" />
                 </div>
@@ -162,7 +172,7 @@
                 <p class="font-bold text-sm text-[#1f3728] line-clamp-2 mb-0.5">{{ item.title }}</p>
                 <p class="text-xs text-gray-500 mb-1">{{ item.author }}</p>
                 <p class="text-xs text-[#1f3728] font-bold">
-                  {{ new Intl.NumberFormat('vi-VN').format(item.price) }} đ/lần
+                  {{ new Intl.NumberFormat('vi-VN').format(item.price) }} đ / lượt
                 </p>
                 <div class="mt-1.5">
                   <span v-if="item.availableCopies > 0" class="text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
@@ -289,7 +299,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#1b2a20] text-white pt-16 pb-8">
+    <footer class="user-footer bg-[#1b2a20] text-white pt-16 pb-8">
       <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/10 pb-12 mb-8">
         <div class="col-span-1 md:col-span-2">
           <h2 class="text-xl font-extrabold uppercase tracking-tighter mb-4">SPACESOUL</h2>
@@ -319,7 +329,7 @@
         </div>
       </div>
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-xs text-white/50">
-        <p>© 2024 Spacesoul Library. All rights reserved.</p>
+        <p>© 2026 Spacesoul Library. All rights reserved.</p>
         <div class="flex gap-6 mt-4 md:mt-0">
           <a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a>
           <a href="#" class="hover:text-white transition-colors">Điều khoản dịch vụ</a>
@@ -338,6 +348,7 @@ import {
 } from 'lucide-vue-next'
 import { authService } from '@/services/auth'
 import { borrowService } from '@/services/borrow'
+import { useCoverFallback } from '@/utils/imageFallback'
 import {
   cart, cartCount, removeFromCart, clearCart,
   notificationList, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAllNotifications, addNotification
@@ -348,6 +359,7 @@ const router = useRouter()
 
 const showCart = ref(false)
 const showNotification = ref(false)
+const showUserMenu = ref(false)
 const isBorrowing = ref(false)
 
 const isLoggedIn = computed(() => authService.isAuthenticated())
@@ -413,8 +425,11 @@ const borrowAllFromCart = async () => {
 }
 
 const handleLogout = () => {
+  showUserMenu.value = false
+  showCart.value = false
+  showNotification.value = false
   authService.logout()
-  router.push('/login')
+  router.replace('/login')
 }
 
 const formatTime = (iso) => {
@@ -429,7 +444,62 @@ const formatTime = (iso) => {
 </script>
 
 <style scoped>
-.font-title { font-family: 'Inter', sans-serif; }
+.font-title { font-family: 'Be Vietnam Pro', sans-serif; }
+
+.user-shell {
+  background:
+    radial-gradient(circle at 8% 12%, rgba(210, 176, 104, 0.08), transparent 28rem),
+    #f7f8f4;
+}
+
+.user-header {
+  background: rgba(255, 255, 252, 0.9);
+  border-color: rgba(31, 55, 40, 0.08);
+  box-shadow: 0 8px 30px rgba(25, 48, 34, 0.055);
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #f0ede3;
+  border: 1px solid rgba(31, 55, 40, 0.09);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.register-link,
+.register-link:visited,
+.register-link:hover {
+  color: #fff !important;
+}
+
+.user-footer {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(210, 176, 104, 0.16), transparent 26rem),
+    linear-gradient(135deg, #10271d, #1c3b2b 60%, #173224);
+}
+
+.user-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image:
+    linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to right, black, transparent 75%);
+}
+
+.user-footer > div {
+  position: relative;
+  z-index: 1;
+}
 
 /* Slide right panel */
 .slide-right-enter-active,

@@ -21,7 +21,7 @@
             <th class="px-6 py-4 font-bold border-b border-gray-200">Sách</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Tác giả</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Nhà XB / Năm XB</th>
-            <th class="px-6 py-4 font-bold border-b border-gray-200">Đơn giá</th>
+            <th class="px-6 py-4 font-bold border-b border-gray-200">Phí mượn / lượt</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Tồn kho</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Trạng thái</th>
             <th class="px-6 py-4 font-bold text-right border-b border-gray-200">Thao tác</th>
@@ -57,7 +57,7 @@
               <span v-else class="bg-orange-100/50 border border-orange-200 text-orange-700 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">Đã mượn hết</span>
             </td>
             <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="admin-row-actions flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button @click="openEditModal(book)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"><Edit2 class="w-4 h-4" /></button>
                 <button @click="deleteBook(book._id)" class="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors"><Trash2 class="w-4 h-4" /></button>
               </div>
@@ -265,3 +265,11 @@ onMounted(() => {
   loadData()
 })
 </script>
+
+<style scoped>
+@media (hover: none), (max-width: 900px) {
+  .admin-row-actions {
+    opacity: 1;
+  }
+}
+</style>

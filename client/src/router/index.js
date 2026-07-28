@@ -43,8 +43,7 @@ const routes = [
       {
         path: 'books/:id',
         name: 'book-detail',
-        component: BookDetail,
-        props: true
+        component: BookDetail
       },
       {
         path: 'profile',
@@ -54,7 +53,8 @@ const routes = [
       {
         path: 'borrowed',
         name: 'borrowed-books',
-        component: BorrowedBooks
+        component: BorrowedBooks,
+        meta: { requiresReader: true }
       },
       {
         path: 'guide',
@@ -122,7 +122,12 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    return { top: 0, left: 0 }
+  }
 })
 
 router.beforeEach((to, from, next) => {
@@ -133,6 +138,12 @@ router.beforeEach((to, from, next) => {
   // Require employee (nhân viên / admin) for admin routes
   if (to.matched.some(record => record.meta.requiresEmployee)) {
     if (!token || !user || user.type !== 'Employee') {
+      return next('/login')
+    }
+  }
+
+  if (to.matched.some(record => record.meta.requiresReader)) {
+    if (!token || !user || user.type === 'Employee') {
       return next('/login')
     }
   }

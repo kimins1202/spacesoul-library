@@ -1,17 +1,17 @@
 <template>
-  <div class="flex h-screen bg-gray-50 font-sans overflow-hidden">
+  <div class="admin-shell flex h-screen bg-gray-50 font-sans overflow-hidden">
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#1f3728] flex flex-col justify-between hidden md:flex text-white flex-shrink-0">
+    <aside class="admin-sidebar w-72 bg-[#1f3728] flex flex-col justify-between hidden md:flex text-white flex-shrink-0">
       <div>
         <!-- Logo -->
-        <div class="px-6 py-5 border-b border-white/10">
+        <div class="px-6 py-6 border-b border-white/10">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-              <BookOpen class="w-4 h-4 text-white" />
+            <div class="admin-brand-mark w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+              <BookOpen class="w-5 h-5 text-[#e0bd70]" />
             </div>
             <div>
               <h1 class="text-sm font-extrabold text-white leading-tight uppercase tracking-tight">Spacesoul</h1>
-              <p class="text-[10px] font-semibold text-white/50 uppercase tracking-wider">Admin Panel</p>
+              <p class="text-[10px] font-semibold text-white/50 uppercase tracking-[0.16em]">Library Console</p>
             </div>
           </div>
         </div>
@@ -62,6 +62,13 @@
             <Users class="w-4 h-4 flex-shrink-0" />
             Người dùng
           </router-link>
+
+          <p class="text-[9px] font-bold text-white/30 uppercase tracking-widest px-3 pt-4 pb-1.5">Truy cập nhanh</p>
+          <router-link to="/"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-all">
+            <ExternalLink class="w-4 h-4 flex-shrink-0" />
+            Xem trang thư viện
+          </router-link>
         </nav>
       </div>
 
@@ -86,13 +93,18 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col overflow-hidden">
       <!-- Top Header -->
-      <header class="h-14 flex items-center justify-between px-8 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+      <header class="admin-topbar h-[72px] flex items-center justify-between px-8 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
         <div class="flex items-center gap-3">
           <h2 class="text-base font-bold text-gray-900">{{ currentPageName }}</h2>
           <div class="text-gray-300">·</div>
           <p class="text-sm text-gray-500">{{ currentDate }}</p>
         </div>
         <div class="flex items-center gap-3">
+          <router-link to="/"
+            class="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-[#1f3728]/10 bg-[#f5f3eb] text-[#1f3728] text-xs font-bold hover:bg-[#ebe7db] transition-colors">
+            <ExternalLink class="w-3.5 h-3.5" />
+            Trang thư viện
+          </router-link>
           <!-- Pending badge -->
           <div v-if="pendingCount > 0" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
             <div class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
@@ -112,7 +124,7 @@
       </header>
 
       <!-- Scrollable Content -->
-      <div class="flex-1 overflow-auto p-6 bg-gray-50">
+      <div class="admin-content flex-1 overflow-auto p-7 bg-gray-50">
         <router-view v-slot="{ Component }">
           <transition name="page" mode="out-in">
             <component :is="Component" />
@@ -120,13 +132,32 @@
         </router-view>
       </div>
     </main>
+
+    <nav class="admin-mobile-nav md:hidden">
+      <router-link to="/admin/dashboard" :class="{ active: route.path === '/admin/dashboard' }">
+        <LayoutDashboard /><span>Tổng quan</span>
+      </router-link>
+      <router-link to="/admin/books" :class="{ active: route.path.startsWith('/admin/books') }">
+        <Library /><span>Sách</span>
+      </router-link>
+      <router-link to="/admin/borrows" :class="{ active: route.path.startsWith('/admin/borrows') }">
+        <span class="mobile-icon"><ClipboardList /><b v-if="pendingCount > 0">{{ pendingCount }}</b></span>
+        <span>Mượn trả</span>
+      </router-link>
+      <router-link v-if="isAdmin" to="/admin/users" :class="{ active: route.path.startsWith('/admin/users') }">
+        <Users /><span>Độc giả</span>
+      </router-link>
+      <router-link to="/">
+        <ExternalLink /><span>Thư viện</span>
+      </router-link>
+    </nav>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { LayoutDashboard, Library, Users, ClipboardList, LogOut, BookOpen } from 'lucide-vue-next'
+import { LayoutDashboard, Library, Users, ClipboardList, LogOut, BookOpen, ExternalLink } from 'lucide-vue-next'
 import { authService } from '@/services/auth'
 import { borrowService } from '@/services/borrow'
 
@@ -176,7 +207,183 @@ onMounted(loadPendingCount)
 </script>
 
 <style scoped>
-.font-title { font-family: 'Inter', sans-serif; }
+.font-title { font-family: 'Be Vietnam Pro', sans-serif; }
+
+.admin-shell {
+  background: #f3f5f1;
+}
+
+.admin-sidebar {
+  position: relative;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(219, 181, 103, 0.18), transparent 19rem),
+    linear-gradient(165deg, #17392a 0%, #11291e 62%, #0c2117 100%);
+  box-shadow: 14px 0 40px rgba(13, 35, 24, 0.13);
+}
+
+.admin-sidebar :deep([class*="text-white/30"]),
+.admin-sidebar :deep([class*="text-white/40"]),
+.admin-sidebar :deep([class*="text-white/50"]) {
+  color: rgba(255,255,255,.62) !important;
+}
+
+.admin-sidebar :deep([class*="text-white/70"]) {
+  color: rgba(255,255,255,.82) !important;
+}
+
+.admin-sidebar nav :deep(a) {
+  min-height: 44px;
+  border: 1px solid transparent;
+}
+
+.admin-sidebar nav :deep(a.bg-white) {
+  border-color: rgba(224,189,112,.42);
+  background: #f5f1e7 !important;
+  color: #173b2b !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.14);
+}
+
+.admin-sidebar nav :deep(a:not(.bg-white):hover) {
+  border-color: rgba(255,255,255,.09);
+  background: rgba(255,255,255,.08);
+}
+
+.admin-sidebar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image:
+    linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+}
+
+.admin-sidebar > * {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-brand-mark {
+  border: 1px solid rgba(255,255,255,.13);
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.14);
+}
+
+.admin-topbar {
+  background: rgba(255, 255, 252, 0.92);
+  backdrop-filter: blur(16px);
+  border-color: rgba(31,55,40,.08);
+  box-shadow: 0 8px 30px rgba(25, 48, 34, .045);
+}
+
+.admin-content {
+  background:
+    radial-gradient(circle at 88% 5%, rgba(206, 173, 104, .09), transparent 24rem),
+    #f3f5f1;
+}
+
+.admin-content :deep(.bg-white) {
+  border-color: rgba(31,55,40,.1);
+}
+
+.admin-content :deep(.text-gray-400) {
+  color: #7b867e;
+}
+
+.admin-content :deep(.text-gray-500) {
+  color: #647168;
+}
+
+.admin-content :deep(input),
+.admin-content :deep(select),
+.admin-content :deep(textarea) {
+  color: #273d31;
+  background-color: #fff;
+  border-color: #d7dbd4;
+}
+
+.admin-content :deep(thead) {
+  color: #42564a;
+  background: #f1f4ef;
+}
+
+.admin-mobile-nav {
+  position: fixed;
+  z-index: 80;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  min-height: 66px;
+  padding: 8px 6px;
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid rgba(31,55,40,.11);
+  border-radius: 18px;
+  background: rgba(255,255,252,.94);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 48px rgba(18,45,31,.18);
+}
+
+.admin-mobile-nav a {
+  min-width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  color: #869087;
+  font-size: .58rem;
+  font-weight: 700;
+}
+
+.admin-mobile-nav a > svg,
+.admin-mobile-nav .mobile-icon > svg {
+  width: 19px;
+  height: 19px;
+}
+
+.admin-mobile-nav a.active {
+  color: #1f4d36;
+  background: #e9eee8;
+}
+
+.mobile-icon {
+  position: relative;
+}
+
+.mobile-icon b {
+  position: absolute;
+  top: -7px;
+  right: -10px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 99px;
+  background: #bf4b49;
+  color: white;
+  font-size: .5rem;
+}
+
+@media (max-width: 767px) {
+  .admin-topbar {
+    height: 64px;
+    padding: 0 18px;
+  }
+
+  .admin-topbar p,
+  .admin-topbar .text-gray-300 {
+    display: none;
+  }
+
+  .admin-content {
+    padding: 18px 16px 94px;
+  }
+}
 
 .page-enter-active,
 .page-leave-active {

@@ -89,14 +89,14 @@
               :to="'/books/' + book._id" 
               class="group flex flex-col bg-white rounded-2xl p-3 border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300">
               <div class="relative rounded-xl overflow-hidden aspect-[3/4] mb-4 bg-gray-100">
-                <img v-if="book.cover" :src="book.cover" alt="Book Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img v-if="book.cover" :src="book.cover" :alt="`Bìa sách ${book.title}`" @error="useCoverFallback" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div v-else class="w-full h-full flex items-center justify-center text-gray-400">No cover</div>
                 <div v-if="book.availableCopies > 0" class="absolute top-2 right-2 bg-[#1f3728] text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm">Sẵn có</div>
                 <div v-else class="absolute top-2 right-2 bg-gray-500/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shadow-sm">Đang mượn</div>
               </div>
               <h3 class="font-bold text-[#1f3728] text-sm leading-tight mb-1 group-hover:text-[#344d3d] transition-colors line-clamp-2">{{ book.title }}</h3>
               <p class="text-xs text-gray-500 font-medium mb-1">{{ book.author }}</p>
-              <p class="text-xs text-orange-600 font-bold mb-3 mt-auto">{{ formatCurrency(book.price) }} đ/lần</p>
+              <p class="text-xs text-orange-600 font-bold mb-3 mt-auto">{{ formatCurrency(book.price) }} đ / lượt</p>
               <div class="flex flex-wrap gap-1">
                 <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase tracking-wider">{{ book.category }}</span>
               </div>
@@ -134,6 +134,7 @@ import {
   ChevronRight
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
+import { useCoverFallback } from '@/utils/imageFallback'
 
 const books = ref([])
 const categories = ref([])
@@ -203,9 +204,15 @@ const sortedBooks = computed(() => {
 
 onMounted(() => {
   searchQuery.value = route.query.q || ''
-  if (['vanhoc', 'kynang', 'khoahoc', 'taichinh', 'congnghe', 'thieunhi'].includes(searchQuery.value)) {
+  const categoryQuery = route.query.category || ''
+  if (categoryQuery) {
+    selectedCategory.value = categoryQuery
+  } else if (['vanhoc', 'kynang', 'khoahoc', 'taichinh', 'congnghe', 'thieunhi'].includes(searchQuery.value)) {
     selectedCategory.value = searchQuery.value
     searchQuery.value = ''
+  }
+  if (['available', 'borrowed'].includes(route.query.status)) {
+    selectedStatus.value = route.query.status
   }
   loadBooks()
 })

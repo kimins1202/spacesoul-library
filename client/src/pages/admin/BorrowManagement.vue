@@ -41,7 +41,7 @@
           <tr class="text-gray-500 text-xs uppercase tracking-wider">
             <th class="px-6 py-4 font-bold border-b border-gray-200">Độc giả</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Sách mượn</th>
-            <th class="px-6 py-4 font-bold border-b border-gray-200">Đơn giá</th>
+            <th class="px-6 py-4 font-bold border-b border-gray-200">Phí mượn / lượt</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">NV Xử lý</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Ngày mượn</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Hạn trả</th>
@@ -91,7 +91,7 @@
               </span>
             </td>
             <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="admin-row-actions flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <!-- Approve (pending) -->
                 <button v-if="borrow.status === 'pending'" @click="handleApprove(borrow._id)" class="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-colors" title="Phê duyệt">
                   <Check class="w-4 h-4" />
@@ -217,6 +217,12 @@ onMounted(loadBorrows)
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+@media (hover: none), (max-width: 900px) {
+  .admin-row-actions {
+    opacity: 1;
+  }
 }
 .hide-scrollbar {
   -ms-overflow-style: none;

@@ -12,6 +12,20 @@ const bookSchema = new mongoose.Schema(
       required: [true, "Vui lòng nhập tên tác giả"],
       trim: true,
     },
+    price: {
+      type: Number,
+      required: [true, "Vui lòng nhập đơn giá"],
+      min: 0,
+    },
+    publishYear: {
+      type: Number,
+      required: [true, "Vui lòng nhập năm xuất bản"],
+    },
+    publisher: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Publisher",
+      required: [true, "Vui lòng chọn nhà xuất bản"],
+    },
     category: {
       type: String,
       required: [true, "Vui lòng nhập thể loại"],

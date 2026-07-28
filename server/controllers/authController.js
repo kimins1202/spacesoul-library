@@ -1,19 +1,24 @@
-const User = require("../models/User");
+const Reader = require("../models/Reader");
+const Employee = require("../models/Employee");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 
-// Đăng ký người dùng mới
+// Đăng ký người dùng mới (Mặc định tạo Reader)
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    // Check if email exists in either Reader or Employee
+    const readerExists = await Reader.findOne({ email });
+    const employeeExists = await Employee.findOne({ email });
+    
+    if (readerExists || employeeExists) {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
 
-    const user = await User.create({
-      name,
+    const user = await Reader.create({
+      firstName,
+      lastName,
       email,
       password,
     });
@@ -21,23 +26,32 @@ const registerUser = async (req, res) => {
     res.status(201).json({
       user: {
         _id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
+        type: 'Reader'
       },
-      token: generateToken(user._id),
+      token: generateToken(user._id, 'Reader'),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//Đăng nhập
+// Đăng nhập
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    let user = await Reader.findOne({ email });
+    let type = 'Reader';
+    
+    if (!user) {
+      user = await Employee.findOne({ email });
+      type = 'Employee';
+    }
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
     }
@@ -50,11 +64,13 @@ const loginUser = async (req, res) => {
     res.json({
       user: {
         _id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
+        type: type
       },
-      token: generateToken(user._id),
+      token: generateToken(user._id, type),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,36 +1,48 @@
 <template>
   <div>
-    <!-- Hero Section -->
-    <section class="py-20 text-center flex flex-col items-center justify-center">
-      <h1 class="text-4xl md:text-5xl font-bold font-title text-[#1f3728] mb-6 tracking-tight">Khám phá Tri thức Việt</h1>
-      <p class="text-gray-500 max-w-2xl mx-auto mb-10 text-sm md:text-base px-4">
-        Hành trình tìm kiếm cảm hứng bắt đầu từ những trang sách. Khám phá kho tàng tri thức đa dạng từ văn học nghệ thuật đến công nghệ hiện đại.
-      </p>
+    <!-- Hero Banner Section -->
+    <section class="relative pt-32 pb-24 flex flex-col items-center justify-center min-h-[500px] overflow-hidden mb-8">
+      <!-- Background Image -->
+      <img src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=2000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover" alt="Library Banner" />
+      <!-- Gradient Overlay -->
+      <div class="absolute inset-0 bg-gradient-to-b from-[#1b2a20]/80 via-[#1b2a20]/60 to-[#fbfbfb]"></div>
 
-      <!-- Search Bar -->
-      <div class="bg-white border border-gray-200 rounded-lg p-2 max-w-4xl w-full mx-4 shadow-sm flex flex-col md:flex-row gap-2">
-        <div class="flex-1 flex items-center px-3">
-          <Search class="w-5 h-5 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Tìm tên sách hoặc tác giả..." 
-            class="w-full bg-transparent border-none outline-none px-3 py-2 text-sm text-gray-700"
-          >
-        </div>
-        <div class="h-px md:h-8 w-full md:w-px bg-gray-200 mx-2 self-center"></div>
-        <div class="flex gap-2">
-          <select class="bg-transparent border-none outline-none text-sm text-gray-600 px-2 py-2 cursor-pointer appearance-none">
-            <option>Tất cả thể loại</option>
-            <option>Văn học</option>
-            <option>Kinh tế</option>
-          </select>
-          <select class="bg-transparent border-none outline-none text-sm text-gray-600 px-2 py-2 cursor-pointer appearance-none">
-            <option>Trạng thái: Tất cả</option>
-            <option>Sẵn có</option>
-          </select>
-          <button class="bg-[#1f3728] text-white px-6 py-2 rounded-md text-sm font-semibold hover:bg-[#16241c] transition-colors flex items-center gap-2 whitespace-nowrap">
-            <Filter class="w-4 h-4" /> Lọc kết quả
-          </button>
+      <div class="relative z-10 w-full px-6 flex flex-col items-center text-center">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold font-title text-white mb-6 tracking-tight drop-shadow-md">
+          Khám phá Tri thức Việt
+        </h1>
+        <p class="text-white/95 max-w-2xl mx-auto mb-10 text-sm md:text-lg font-medium drop-shadow-md">
+          Hành trình tìm kiếm cảm hứng bắt đầu từ những trang sách. Khám phá kho tàng tri thức đa dạng từ văn học nghệ thuật đến công nghệ hiện đại.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="bg-white/95 backdrop-blur-xl border border-white/40 rounded-2xl p-2.5 max-w-4xl w-full mx-4 shadow-2xl flex flex-col md:flex-row gap-2 transition-transform duration-300 hover:scale-[1.01]">
+          <div class="flex-1 flex items-center px-4">
+            <Search class="w-5 h-5 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Tìm tên sách hoặc tác giả..." 
+              class="w-full bg-transparent border-none outline-none px-3 py-2.5 text-sm md:text-base text-gray-800 font-medium placeholder:text-gray-400"
+            >
+          </div>
+          <div class="h-px md:h-8 w-full md:w-px bg-gray-200 mx-2 self-center"></div>
+          <div class="flex flex-col md:flex-row gap-2">
+            <select class="bg-transparent border-none outline-none text-sm font-semibold text-gray-600 px-3 py-2.5 cursor-pointer appearance-none hover:text-[#1b2a20] transition-colors">
+              <option>Tất cả thể loại</option>
+              <option>Văn học</option>
+              <option>Kinh tế</option>
+              <option>Khoa học</option>
+              <option>Công nghệ</option>
+            </select>
+            <select class="bg-transparent border-none outline-none text-sm font-semibold text-gray-600 px-3 py-2.5 cursor-pointer appearance-none hover:text-[#1b2a20] transition-colors">
+              <option>Trạng thái: Tất cả</option>
+              <option>Sẵn có</option>
+              <option>Đang mượn</option>
+            </select>
+            <button class="bg-[#1b2a20] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#121c15] transition-colors flex items-center justify-center gap-2 shadow-md">
+              <Filter class="w-4 h-4" /> Lọc kết quả
+            </button>
+          </div>
         </div>
       </div>
     </section>

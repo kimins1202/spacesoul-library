@@ -15,6 +15,8 @@ import BookList from '../pages/user/BookList.vue'
 import BookDetail from '../pages/user/BookDetail.vue'
 import Profile from '../pages/user/Profile.vue'
 import BorrowedBooks from '../pages/user/BorrowedBooks.vue'
+import Guide from '../pages/user/Guide.vue'
+import Contact from '../pages/user/Contact.vue'
 
 // Pages - Admin
 import Dashboard from '../pages/admin/Dashboard.vue'
@@ -53,6 +55,16 @@ const routes = [
         path: 'borrowed',
         name: 'borrowed-books',
         component: BorrowedBooks
+      },
+      {
+        path: 'guide',
+        name: 'guide',
+        component: Guide
+      },
+      {
+        path: 'contact',
+        name: 'contact',
+        component: Contact
       }
     ]
   },
@@ -77,6 +89,7 @@ const routes = [
   {
     path: '/admin',
     component: AdminLayout,
+    meta: { requiresEmployee: true },
     children: [
       {
         path: 'dashboard',
@@ -110,6 +123,21 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const userStr = localStorage.getItem('user')
+  const user = userStr ? JSON.parse(userStr) : null
+
+  // Require employee (nhân viên / admin) for admin routes
+  if (to.matched.some(record => record.meta.requiresEmployee)) {
+    if (!token || !user || user.type !== 'Employee') {
+      return next('/login')
+    }
+  }
+
+  next()
 })
 
 export default router

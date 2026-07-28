@@ -3,7 +3,7 @@ const Book = require("../models/Book");
 //Lấy danh sách tất cả sách
 const getBooks = async (req, res) => {
   try {
-    const books = await Book.find();
+    const books = await Book.find().populate("publisher");
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -13,7 +13,7 @@ const getBooks = async (req, res) => {
 // Lấy chi tiết 1 cuốn sách theo ID
 const getBookById = async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id);
+    const book = await Book.findById(req.params.id).populate("publisher");
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
     }

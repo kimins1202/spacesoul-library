@@ -1,11 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap");
 
 @import "tailwindcss";
 
 :root {
   /* Fonts */
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-title: "Outfit", sans-serif;
+  --font-sans: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+  --font-title: "Be Vietnam Pro", sans-serif;
+
 
   /* Color Palette - Light Mode */
   --primary: hsl(140, 45%, 38%);
@@ -87,12 +88,6 @@
   }
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 body {
   font-family: var(--font-sans);
   background: var(--bg-main);
@@ -109,13 +104,16 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: var(--radius-full);
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
@@ -129,7 +127,6 @@ h5,
 h6 {
   font-family: var(--font-title);
   font-weight: 700;
-  color: var(--text-primary);
   line-height: 1.25;
 }
 
@@ -181,10 +178,12 @@ a {
   color: var(--text-on-primary);
   box-shadow: 0 4px 14px var(--primary-glow);
 }
+
 .btn-primary:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
 }
+
 .btn-primary:active {
   transform: translateY(0);
 }
@@ -194,6 +193,7 @@ a {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
 }
+
 .btn-secondary:hover {
   background: var(--border-color);
   transform: translateY(-1px);
@@ -203,6 +203,7 @@ a {
   background: var(--danger);
   color: #fff;
 }
+
 .btn-danger:hover {
   filter: brightness(0.9);
   transform: translateY(-1px);
@@ -233,6 +234,7 @@ a {
   transition: all var(--transition-fast);
   outline: none;
 }
+
 .form-control:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-glow);
@@ -254,10 +256,12 @@ a {
   background: var(--success-bg);
   color: var(--success);
 }
+
 .badge-warning {
   background: var(--warning-bg);
   color: var(--warning);
 }
+
 .badge-danger {
   background: var(--danger-bg);
   color: var(--danger);
@@ -276,6 +280,7 @@ a {
   border-collapse: collapse;
   text-align: left;
 }
+
 .custom-table th {
   background: var(--border-color);
   padding: 14px 20px;
@@ -283,14 +288,17 @@ a {
   font-size: 0.9rem;
   color: var(--text-secondary);
 }
+
 .custom-table td {
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
   font-size: 0.95rem;
 }
+
 .custom-table tr:last-child td {
   border-bottom: none;
 }
+
 .custom-table tr:hover td {
   background: rgba(99, 102, 241, 0.02);
 }
@@ -309,11 +317,13 @@ a {
   position: relative;
   overflow: hidden;
 }
+
 .book-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
   border-color: rgba(99, 102, 241, 0.2);
 }
+
 .book-card img {
   width: 100%;
   aspect-ratio: 3/4;
@@ -328,6 +338,7 @@ a {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -343,12 +354,15 @@ a {
   display: grid;
   gap: 24px;
 }
+
 .grid-2 {
   grid-template-columns: repeat(2, 1fr);
 }
+
 .grid-3 {
   grid-template-columns: repeat(3, 1fr);
 }
+
 .grid-4 {
   grid-template-columns: repeat(4, 1fr);
 }
@@ -357,14 +371,33 @@ a {
   .grid-4 {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 640px) {
+
   .grid-4,
   .grid-3,
   .grid-2 {
     grid-template-columns: 1fr;
   }
+}
+
+/* Page Transition Effects */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-15px);
 }

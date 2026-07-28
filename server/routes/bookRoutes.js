@@ -7,16 +7,16 @@ const {
   updateBook,
   deleteBook,
 } = require("../controllers/bookController");
-const { protect, admin } = require("../middlewares/authMiddleware");
+const { protect, employee } = require("../middlewares/authMiddleware");
 
 // Route cho users
 router.route("/").get(getBooks);
 router.route("/:id").get(getBookById);
 
-// Route cho admin
-router.route("/").post(protect, admin, createBook);
+// Route cho admin/nhân viên
+router.route("/").post(protect, employee, createBook);
 router
   .route("/:id")
-  .put(protect, admin, updateBook)
-  .delete(protect, admin, deleteBook);
+  .put(protect, employee, updateBook)
+  .delete(protect, employee, deleteBook);
 module.exports = router;

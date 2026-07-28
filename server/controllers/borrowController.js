@@ -1,22 +1,24 @@
 const Borrow = require("../models/Borrow");
 const Book = require("../models/Book");
+const Reader = require("../models/Reader");
+const Employee = require("../models/Employee");
 
 const createBorrowRequest = async (req, res) => {
   try {
     const { bookId } = req.body;
     // Kiểm tra xem sách có tồn tại không
-    const book = await Book.findById(bookId);
-    if (!book) {
+    const bookRecord = await Book.findById(bookId);
+    if (!bookRecord) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
     }
     // Kiểm tra xem sách có bản sao khả dụng không
-    if (book.availableCopies <= 0) {
+    if (bookRecord.availableCopies <= 0) {
       return res.status(400).json({ message: "Sách đã hết bản sao khả dụng" });
     }
     // Kiểm tra xem người dùng có đang mượn sách quá hạn không
     const overdueBorrow = await Borrow.findOne({
-      userId: req.user._id,
-      bookId: bookId,
+      reader: req.user._id,
+      book: bookId,
       status: "overdue",
     });
 
@@ -27,7 +29,7 @@ const createBorrowRequest = async (req, res) => {
     }
     //Giới hạn số lượng mượn sách
     const countBorrows = await Borrow.countDocuments({
-      userId: req.user._id,
+      reader: req.user._id,
       status: { $in: ["pending", "borrowing", "overdue"] },
     });
     if (countBorrows >= 10) {
@@ -37,8 +39,8 @@ const createBorrowRequest = async (req, res) => {
     }
     //Không gửi yêu cầu mượn sách nếu đã có yêu cầu mượn đang chờ xử lý
     const existingBorrow = await Borrow.findOne({
-      userId: req.user._id,
-      bookId: bookId,
+      reader: req.user._id,
+      book: bookId,
       status: { $in: ["pending", "borrowing", "overdue"] },
     });
     if (existingBorrow) {
@@ -51,8 +53,8 @@ const createBorrowRequest = async (req, res) => {
     const tempDueDate = new Date();
     tempDueDate.setDate(tempDueDate.getDate() + 14);
     const borrow = await Borrow.create({
-      userId: req.user._id,
-      bookId: bookId,
+      reader: req.user._id,
+      book: bookId,
       dueDate: tempDueDate,
     });
     res.status(201).json({ message: "Yêu cầu mượn sách thành công", borrow });
@@ -64,8 +66,8 @@ const createBorrowRequest = async (req, res) => {
 // Lấy danh sách yêu cầu mượn sách của người dùng hiện tại
 const getMyBorrows = async (req, res) => {
   try {
-    const borrows = await Borrow.find({ userId: req.user._id })
-      .populate("bookId", "title author cover category")
+    const borrows = await Borrow.find({ reader: req.user._id })
+      .populate("book", "title author cover category")
       .sort({ createdAt: -1 });
     res.status(200).json(borrows);
   } catch (error) {
@@ -77,8 +79,9 @@ const getMyBorrows = async (req, res) => {
 const getAllBorrows = async (req, res) => {
   try {
     const borrows = await Borrow.find()
-      .populate("userId", "name email")
-      .populate("bookId", "title author cover category")
+      .populate("reader", "firstName lastName email")
+      .populate("employee", "firstName lastName")
+      .populate("book", "title author cover category")
       .sort({ createdAt: -1 });
     res.status(200).json(borrows);
   } catch (error) {
@@ -100,8 +103,8 @@ const approveBorrowRequest = async (req, res) => {
         .json({ message: "Yêu cầu mượn đã được xử lý trước đó" });
     }
     // Kiểm tra xem sách có bản sao khả dụng không
-    const book = await Book.findById(borrow.bookId);
-    if (book.availableCopies <= 0) {
+    const bookRecord = await Book.findById(borrow.book);
+    if (bookRecord.availableCopies <= 0) {
       return res.status(400).json({ message: "Sách đã hết bản sao khả dụng" });
     }
     // Cập nhật trạng thái yêu cầu mượn và ngày mượn, ngày trả
@@ -110,9 +113,13 @@ const approveBorrowRequest = async (req, res) => {
     borrow.dueDate = new Date();
     // Thiết lập ngày trả sách là 14 ngày kể từ ngày mượn
     borrow.dueDate.setDate(borrow.borrowDate.getDate() + 14);
+    
+    // Ghi nhận nhân viên xử lý
+    borrow.employee = req.user._id;
+
     await borrow.save();
-    book.availableCopies -= 1;
-    await book.save();
+    bookRecord.availableCopies -= 1;
+    await bookRecord.save();
     res.status(200).json(borrow);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -157,11 +164,14 @@ const confirmReturnBook = async (req, res) => {
 
     borrow.status = "returned";
     borrow.returnDate = new Date();
+    // Ghi nhận nhân viên xử lý (có thể ghi đè nhân viên approve)
+    borrow.employee = req.user._id;
+
     await borrow.save();
 
-    const book = await Book.findById(borrow.bookId);
-    book.availableCopies += 1;
-    await book.save();
+    const bookRecord = await Book.findById(borrow.book);
+    bookRecord.availableCopies += 1;
+    await bookRecord.save();
     res.json(borrow);
   } catch (error) {
     res.status(500).json({ message: error.message });

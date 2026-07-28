@@ -126,6 +126,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { 
   Search,
   Filter,
@@ -140,6 +141,7 @@ const searchQuery = ref('')
 const selectedCategory = ref('')
 const selectedStatus = ref('all')
 const sortBy = ref('newest')
+const route = useRoute()
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN').format(value || 0)
@@ -200,6 +202,11 @@ const sortedBooks = computed(() => {
 })
 
 onMounted(() => {
+  searchQuery.value = route.query.q || ''
+  if (['vanhoc', 'kynang', 'khoahoc', 'taichinh', 'congnghe', 'thieunhi'].includes(searchQuery.value)) {
+    selectedCategory.value = searchQuery.value
+    searchQuery.value = ''
+  }
   loadBooks()
 })
 </script>

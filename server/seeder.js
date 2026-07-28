@@ -120,6 +120,87 @@ const importData = async () => {
       description: "Tác phẩm văn học kinh điển dành cho thiếu nhi."
     });
 
+    await Book.insertMany([
+      {
+        title: "Nhà Giả Kim",
+        author: "Paulo Coelho",
+        category: "vanhoc",
+        price: 18000,
+        totalCopies: 12,
+        availableCopies: 8,
+        publisher: nxbTre._id,
+        publishYear: 2020,
+        rating: 4.8,
+        cover: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop",
+        description: "Hành trình theo đuổi vận mệnh của chàng chăn cừu Santiago và bài học về việc lắng nghe trái tim."
+      },
+      {
+        title: "Muôn Kiếp Nhân Sinh",
+        author: "Nguyên Phong",
+        category: "kynang",
+        price: 28000,
+        totalCopies: 8,
+        availableCopies: 3,
+        publisher: nxbTre._id,
+        publishYear: 2021,
+        rating: 4.7,
+        cover: "https://images.unsplash.com/photo-1526243741027-444d633d7365?q=80&w=600&auto=format&fit=crop",
+        description: "Những câu chuyện chiêm nghiệm về nhân quả, lựa chọn và cách mỗi người kiến tạo cuộc sống của mình."
+      },
+      {
+        title: "Lược Sử Thời Gian",
+        author: "Stephen Hawking",
+        category: "khoahoc",
+        price: 32000,
+        totalCopies: 7,
+        availableCopies: 5,
+        publisher: nxbTre._id,
+        publishYear: 2018,
+        rating: 4.9,
+        cover: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=600&auto=format&fit=crop",
+        description: "Cánh cửa dễ tiếp cận dẫn vào những câu hỏi lớn về vũ trụ, thời gian, hố đen và nguồn gốc tồn tại."
+      },
+      {
+        title: "Clean Code",
+        author: "Robert C. Martin",
+        category: "congnghe",
+        price: 35000,
+        totalCopies: 6,
+        availableCopies: 4,
+        publisher: nxbTre._id,
+        publishYear: 2022,
+        rating: 4.8,
+        cover: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop",
+        description: "Các nguyên tắc, mẫu tư duy và ví dụ thực tế giúp lập trình viên viết mã rõ ràng, dễ bảo trì."
+      },
+      {
+        title: "Cho Tôi Xin Một Vé Đi Tuổi Thơ",
+        author: "Nguyễn Nhật Ánh",
+        category: "vanhoc",
+        price: 16000,
+        totalCopies: 15,
+        availableCopies: 11,
+        publisher: nxbKimDong._id,
+        publishYear: 2019,
+        rating: 4.9,
+        cover: "https://images.unsplash.com/photo-1474366521946-c3d4b507abf2?q=80&w=600&auto=format&fit=crop",
+        description: "Chuyến tàu hồn nhiên trở về thế giới tuổi thơ qua giọng kể dí dỏm, trong trẻo và đầy hoài niệm."
+      },
+      {
+        title: "Đắc Nhân Tâm",
+        author: "Dale Carnegie",
+        category: "kynang",
+        price: 22000,
+        totalCopies: 10,
+        availableCopies: 0,
+        publisher: nxbTre._id,
+        publishYear: 2021,
+        rating: 4.6,
+        cover: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=600&auto=format&fit=crop",
+        description: "Những nguyên tắc bền vững giúp thấu hiểu con người, giao tiếp chân thành và xây dựng quan hệ tích cực."
+      }
+    ]);
+
     console.log("Data Imported!");
     process.exit();
   } catch (error) {

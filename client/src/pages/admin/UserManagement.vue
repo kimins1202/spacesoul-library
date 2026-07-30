@@ -69,7 +69,7 @@
             <td colspan="5" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không tìm thấy độc giả nào.</td>
           </tr>
           <tr
-            v-for="reader in filteredReaders"
+            v-for="reader in paginatedReaders"
             :key="reader._id"
             :class="['hover:bg-blue-50/30 transition-colors group', reader.status === 'locked' ? 'bg-red-50/20' : '']"
           >
@@ -126,7 +126,7 @@
             <td colspan="5" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không tìm thấy nhân viên nào.</td>
           </tr>
           <tr
-            v-for="emp in filteredEmployees"
+            v-for="emp in paginatedEmployees"
             :key="emp._id"
             class="hover:bg-blue-50/30 transition-colors group"
           >
@@ -163,6 +163,12 @@
         </tbody>
       </table>
     </div>
+    <PaginationControls
+      v-if="!isLoading && !errorMsg"
+      v-model:page="currentPage"
+      :total-items="activeTab === 'readers' ? filteredReaders.length : filteredEmployees.length"
+      :page-size="pageSize"
+    />
 
     <!-- Create Employee Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
@@ -206,9 +212,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Search, Plus, Trash2, Lock, Unlock, Loader2 } from 'lucide-vue-next'
 import { userService } from '@/services/user'
+import PaginationControls from '@/components/admin/PaginationControls.vue'
 
 import { authService } from '@/services/auth'
 
@@ -222,6 +229,8 @@ const isLoading = ref(false)
 const errorMsg = ref('')
 const searchQuery = ref('')
 const statusFilter = ref('all')
+const currentPage = ref(1)
+const pageSize = 10
 
 const showCreateModal = ref(false)
 const isCreating = ref(false)
@@ -243,6 +252,27 @@ const filteredEmployees = computed(() => {
     return fullName.includes(searchQuery.value.toLowerCase()) || e.email.toLowerCase().includes(searchQuery.value.toLowerCase())
   })
 })
+
+const paginatedReaders = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredReaders.value.slice(start, start + pageSize)
+})
+
+const paginatedEmployees = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredEmployees.value.slice(start, start + pageSize)
+})
+
+watch([searchQuery, statusFilter, activeTab], () => {
+  currentPage.value = 1
+})
+
+watch(
+  () => activeTab.value === 'readers' ? filteredReaders.value.length : filteredEmployees.value.length,
+  (total) => {
+    currentPage.value = Math.min(currentPage.value, Math.max(1, Math.ceil(total / pageSize)))
+  }
+)
 
 const loadData = async () => {
   isLoading.value = true

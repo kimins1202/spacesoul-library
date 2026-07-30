@@ -28,7 +28,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 text-sm bg-white">
-          <tr v-for="book in filteredBooks" :key="book._id" class="hover:bg-blue-50/30 transition-colors group">
+          <tr v-for="book in paginatedBooks" :key="book._id" class="hover:bg-blue-50/30 transition-colors group">
             <td class="px-6 py-4">
               <div class="flex items-center gap-4">
                 <div class="w-10 h-14 rounded-md bg-gray-200 overflow-hidden shadow-sm flex-shrink-0">
@@ -74,6 +74,11 @@
         </tbody>
       </table>
     </div>
+    <PaginationControls
+      v-model:page="currentPage"
+      :total-items="filteredBooks.length"
+      :page-size="pageSize"
+    />
 
     <!-- Modal Form -->
     <div v-if="showModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -145,15 +150,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { Search, Plus, Edit2, Trash2, X } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
+import PaginationControls from '@/components/admin/PaginationControls.vue'
 import publisherService from '@/services/publisher'
 
 const books = ref([])
 const publishers = ref([])
 const searchQuery = ref('')
+const currentPage = ref(1)
+const pageSize = 10
 const showModal = ref(false)
 const isEdit = ref(false)
 const editingId = ref(null)
@@ -196,6 +204,19 @@ const filteredBooks = computed(() => {
     b.author.toLowerCase().includes(q) ||
     b.category.toLowerCase().includes(q)
   )
+})
+
+const paginatedBooks = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredBooks.value.slice(start, start + pageSize)
+})
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+watch(() => filteredBooks.value.length, (total) => {
+  currentPage.value = Math.min(currentPage.value, Math.max(1, Math.ceil(total / pageSize)))
 })
 
 const openAddModal = () => {

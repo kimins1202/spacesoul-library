@@ -64,7 +64,7 @@
             <td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không có phiếu mượn nào.</td>
           </tr>
           <tr
-            v-for="borrow in filteredBorrows"
+            v-for="borrow in paginatedBorrows"
             :key="borrow._id"
             :class="['hover:bg-blue-50/30 transition-colors group', borrow.status === 'overdue' ? 'bg-red-50/20' : '']"
           >
@@ -130,11 +130,17 @@
         </tbody>
       </table>
     </div>
+    <PaginationControls
+      v-if="!isLoading && !errorMsg"
+      v-model:page="currentPage"
+      :total-items="filteredBorrows.length"
+      :page-size="pageSize"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import {
   Search,
   Check,
@@ -145,12 +151,15 @@ import {
 } from 'lucide-vue-next'
 import { borrowService } from '@/services/borrow'
 import BookCover from '@/components/books/BookCover.vue'
+import PaginationControls from '@/components/admin/PaginationControls.vue'
 
 const borrows = ref([])
 const isLoading = ref(false)
 const errorMsg = ref('')
 const searchQuery = ref('')
 const activeFilter = ref('all')
+const currentPage = ref(1)
+const pageSize = 10
 
 const tabs = [
   { value: 'all', label: 'Tất cả phiếu mượn', badgeClass: 'bg-gray-100 text-gray-700' },
@@ -174,6 +183,19 @@ const filteredBorrows = computed(() => {
     const matchFilter = activeFilter.value === 'all' || b.status === activeFilter.value
     return matchSearch && matchFilter
   })
+})
+
+const paginatedBorrows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredBorrows.value.slice(start, start + pageSize)
+})
+
+watch([searchQuery, activeFilter], () => {
+  currentPage.value = 1
+})
+
+watch(() => filteredBorrows.value.length, (total) => {
+  currentPage.value = Math.min(currentPage.value, Math.max(1, Math.ceil(total / pageSize)))
 })
 
 const statusLabel = (status) => {

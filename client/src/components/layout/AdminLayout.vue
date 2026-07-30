@@ -1,7 +1,7 @@
 <template>
-  <div class="admin-shell flex h-screen bg-gray-50 font-sans overflow-hidden">
+  <div class="admin-shell flex min-h-screen bg-gray-50 font-sans">
     <!-- Sidebar -->
-    <aside class="admin-sidebar w-72 bg-[#1f3728] flex flex-col justify-between hidden md:flex text-white flex-shrink-0">
+    <aside class="admin-sidebar sticky top-0 h-screen w-72 bg-[#1f3728] flex-col justify-between hidden md:flex text-white flex-shrink-0">
       <div>
         <!-- Logo -->
         <div class="px-6 py-6 border-b border-white/10">
@@ -53,14 +53,13 @@
             </span>
           </router-link>
 
-          <!-- Chỉ Admin mới thấy -->
-          <router-link v-if="isAdmin" to="/admin/users"
+          <router-link to="/admin/users"
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
             :class="route.path.startsWith('/admin/users')
               ? 'bg-white text-[#1f3728] shadow-sm'
               : 'text-white/70 hover:bg-white/10 hover:text-white'">
             <Users class="w-4 h-4 flex-shrink-0" />
-            Người dùng
+            {{ isAdmin ? 'Người dùng' : 'Độc giả' }}
           </router-link>
 
         </nav>
@@ -91,9 +90,9 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="min-w-0 flex-1 flex flex-col">
       <!-- Top Header -->
-      <header class="admin-topbar h-[72px] flex items-center justify-between px-8 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+      <header class="admin-topbar sticky top-0 z-40 h-[72px] flex items-center justify-between px-8 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
         <div class="flex items-center gap-3">
           <h2 class="text-base font-bold text-gray-900">{{ currentPageName }}</h2>
           <div class="text-gray-300">·</div>
@@ -131,8 +130,9 @@
         </div>
       </header>
 
-      <!-- Scrollable Content -->
-      <div class="admin-content flex-1 overflow-auto p-7 bg-gray-50">
+      <!-- Page content: use the document scrollbar so full-page capture tools
+           can detect and capture the complete admin page. -->
+      <div class="admin-content flex-1 p-7 bg-gray-50">
         <router-view v-slot="{ Component }">
           <transition name="page" mode="out-in">
             <component :is="Component" />
@@ -152,7 +152,7 @@
         <span class="mobile-icon"><ClipboardList /><b v-if="pendingCount > 0">{{ pendingCount }}</b></span>
         <span>Mượn trả</span>
       </router-link>
-      <router-link v-if="isAdmin" to="/admin/users" :class="{ active: route.path.startsWith('/admin/users') }">
+      <router-link to="/admin/users" :class="{ active: route.path.startsWith('/admin/users') }">
         <Users /><span>Độc giả</span>
       </router-link>
       <router-link to="/admin/profile" :class="{ active: route.path === '/admin/profile' }">
@@ -230,7 +230,9 @@ onUnmounted(() => {
 }
 
 .admin-sidebar {
-  position: relative;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
   background:
     radial-gradient(circle at 15% 0%, rgba(219, 181, 103, 0.18), transparent 19rem),
     linear-gradient(165deg, #17392a 0%, #11291e 62%, #0c2117 100%);
@@ -419,6 +421,13 @@ onUnmounted(() => {
 .admin-mobile-nav a.active {
   color: #1f4d36;
   background: #e9eee8;
+}
+
+@media (min-width: 768px) {
+  .admin-mobile-nav,
+  .admin-mobile-logout {
+    display: none;
+  }
 }
 
 .mobile-icon {

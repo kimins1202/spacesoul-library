@@ -205,10 +205,16 @@ onMounted(async () => {
   pointer-events: none;
 }
 .hero-inner { position: relative; z-index: 2; max-width: 1240px; min-height: 430px; margin: auto; padding: 80px 28px 54px; display: flex; align-items: center; justify-content: center; }
-.hero-copy { width: 100%; text-align: center; }
+.hero-copy {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 .hero-label { display: inline-flex; align-items: center; gap: 7px; color: #e5c77f; font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .section-kicker { display: inline-flex; align-items: center; gap: 8px; color: #b48535; font-size: .76rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
-.hero h1 { margin: 16px 0 10px; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.08; letter-spacing: -.045em; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.18); }
+.hero h1 { width: 100%; margin: 16px auto 10px; text-align: center; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.08; letter-spacing: -.045em; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.18); }
 .hero-copy > p { max-width: 720px; margin: 0 auto; color: rgba(255,255,255,.72); font-size: .92rem; line-height: 1.75; }
 .hero-search { width: 100%; margin: 34px auto 0; padding: 7px; display: grid; grid-template-columns: minmax(260px, 1fr) 180px 190px auto; align-items: center; gap: 7px; border: 1px solid #d9dad3; background: #fff; border-radius: 13px; box-shadow: 0 12px 30px rgba(32,57,42,.07); text-align: left; }
 .search-field { min-width: 0; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #809087; }
@@ -216,7 +222,7 @@ onMounted(async () => {
 .hero-search select { border-left: 1px solid #e7e3da; cursor: pointer; }
 .hero-search button, .guide-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 9px; background: #254f3a; color: white; font-weight: 800; font-size: .76rem; cursor: pointer; }
 .hero-search button:hover { background: #173a29; }
-.quick-links { margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; align-items: center; color: rgba(255,255,255,.58); font-size: .7rem; }
+.quick-links { width: 100%; margin-top: 16px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; align-items: center; color: rgba(255,255,255,.58); font-size: .7rem; }
 .quick-links button { border: 1px solid rgba(255,255,255,.2); border-radius: 99px; padding: 5px 10px; background: rgba(255,255,255,.1); color: rgba(255,255,255,.82); backdrop-filter: blur(8px); cursor: pointer; }
 .quick-links button:hover { border-color: rgba(229,199,127,.65); background: rgba(255,255,255,.16); color: #fff; }
 .hero-visual { position: relative; min-height: 450px; }

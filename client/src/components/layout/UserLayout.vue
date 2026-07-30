@@ -530,6 +530,12 @@ const handleLogout = () => {
   color: #1f4d36;
 }
 
+@media (min-width: 768px) {
+  .user-mobile-nav {
+    display: none;
+  }
+}
+
 .user-mobile-nav .mobile-logout {
   color: #a2443e;
 }

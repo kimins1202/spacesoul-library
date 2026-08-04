@@ -103,8 +103,8 @@ const handleLogin = async () => {
   isLoading.value = true
   try {
     const data = await authService.login(email.value, password.value)
-    // Chuyển hướng: nhân viên (Employee) -> /admin, độc giả (Reader) -> /
-    if (data.user?.type === 'Employee') {
+    // Chuyển hướng Admin vào trang quản trị, Reader về trang chủ.
+    if (data.user?.type === 'Admin' || data.user?.role === 'admin') {
       router.push('/admin/dashboard')
     } else {
       router.push('/')

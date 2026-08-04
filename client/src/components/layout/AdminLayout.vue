@@ -78,7 +78,7 @@
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-sm font-bold text-white truncate">{{ adminName }}</p>
-              <p class="text-[10px] text-white/50 font-medium capitalize">{{ isAdmin ? 'Quản trị viên' : 'Nhân viên' }}</p>
+              <p class="text-[10px] text-white/50 font-medium capitalize">Quản trị viên</p>
             </div>
           </router-link>
           <button @click="handleLogout" title="Đăng xuất"
@@ -115,7 +115,7 @@
             </div>
             <div class="hidden sm:block">
               <p class="text-xs font-bold text-gray-800 leading-tight">{{ adminName }}</p>
-              <p class="text-[10px] text-gray-400">{{ isAdmin ? 'Admin' : 'Nhân viên' }}</p>
+              <p class="text-[10px] text-gray-400">Admin</p>
             </div>
           </router-link>
           <button

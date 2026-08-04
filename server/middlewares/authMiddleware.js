@@ -1,5 +1,5 @@
 const Reader = require("../models/Reader");
-const Employee = require("../models/Employee");
+const Admin = require("../models/Admin");
 const jwt = require("jsonwebtoken");
 const protect = async (req, res, next) => {
   try {
@@ -12,9 +12,9 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      if (decoded.type === 'Employee') {
-        req.user = await Employee.findById(decoded.id).select("-password");
-        req.userType = 'Employee';
+      if (decoded.type === 'Admin') {
+        req.user = await Admin.findOne({ _id: decoded.id, role: "admin" }).select("-password");
+        req.userType = 'Admin';
       } else {
         req.user = await Reader.findById(decoded.id).select("-password");
         req.userType = 'Reader';
@@ -33,22 +33,12 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Middleware kiểm tra quyền employee (tất cả nhân viên)
-const employee = (req, res, next) => {
-  if (req.user && req.userType === "Employee") {
-    next();
-  } else {
-    return res.status(403).json({ message: "Không có quyền truy cập (yêu cầu nhân viên)" });
-  }
-};
-
-// Middleware kiểm tra quyền admin (chỉ admin)
 const admin = (req, res, next) => {
-  if (req.user && req.userType === "Employee" && req.user.role === "admin") {
+  if (req.user && req.userType === "Admin" && req.user.role === "admin") {
     next();
   } else {
     return res.status(403).json({ message: "Không có quyền truy cập (yêu cầu quản trị viên)" });
   }
 };
 
-module.exports = { protect, employee, admin };
+module.exports = { protect, admin };

@@ -36,12 +36,11 @@
 
     <!-- Table -->
     <div v-else class="overflow-x-auto flex-1">
-      <table class="borrow-table w-full text-left border-collapse min-w-[1080px]">
+      <table class="borrow-table w-full text-left border-collapse min-w-[950px]">
         <colgroup>
           <col class="reader-col">
           <col class="book-col">
           <col class="fee-col">
-          <col class="employee-col">
           <col class="date-col">
           <col class="date-col">
           <col class="status-col">
@@ -52,7 +51,6 @@
             <th class="px-6 py-4 font-bold border-b border-gray-200">Độc giả</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Sách mượn</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Phí mượn / lượt</th>
-            <th class="px-6 py-4 font-bold border-b border-gray-200">NV Xử lý</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Ngày mượn</th>
             <th class="px-6 py-4 font-bold border-b border-gray-200">Hạn trả</th>
             <th class="px-6 py-4 font-bold text-center border-b border-gray-200">Trạng thái</th>
@@ -61,7 +59,7 @@
         </thead>
         <tbody class="divide-y divide-gray-100 text-sm bg-white">
           <tr v-if="filteredBorrows.length === 0">
-            <td colspan="8" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không có phiếu mượn nào.</td>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-400 text-sm font-medium">Không có phiếu mượn nào.</td>
           </tr>
           <tr
             v-for="borrow in paginatedBorrows"
@@ -93,9 +91,6 @@
             <td class="px-6 py-4 text-xs font-medium text-gray-800">
               {{ borrow.book?.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(borrow.book.price) : '—' }}
             </td>
-            <td class="px-6 py-4 text-xs font-medium text-gray-600">
-              {{ borrow.employee ? borrow.employee.lastName + ' ' + borrow.employee.firstName : '—' }}
-            </td>
             <td class="px-6 py-4 text-gray-600 font-medium text-xs">
               {{ borrow.borrowDate ? new Date(borrow.borrowDate).toLocaleDateString('vi-VN') : '—' }}
             </td>
@@ -117,11 +112,7 @@
                 <button v-if="borrow.status === 'pending'" @click="handleCancel(borrow._id)" class="action-button reject" title="Từ chối" aria-label="Từ chối yêu cầu">
                   <X class="w-4 h-4" />
                 </button>
-                <!-- Confirm return (pending-return) -->
-                <button v-if="borrow.status === 'pending-return'" @click="handleConfirmReturn(borrow._id)" class="action-button confirm-return" title="Xác nhận đã nhận sách trả" aria-label="Xác nhận trả sách">
-                  <CornerDownLeft class="w-4 h-4" />
-                </button>
-                <span v-if="!['pending', 'pending-return'].includes(borrow.status)" class="processed-label" title="Đã xử lý" aria-label="Đã xử lý">
+                <span v-if="borrow.status !== 'pending'" class="processed-label" title="Đã xử lý" aria-label="Đã xử lý">
                   <CheckCircle2 class="w-4 h-4" />
                 </span>
               </div>
@@ -145,7 +136,6 @@ import {
   Search,
   Check,
   X,
-  CornerDownLeft,
   CheckCircle2,
   Loader2
 } from 'lucide-vue-next'
@@ -245,15 +235,6 @@ const handleCancel = async (id) => {
   } catch (err) { alert(err.message) }
 }
 
-const handleConfirmReturn = async (id) => {
-  try {
-    await borrowService.confirmReturnBook(id)
-    const b = borrows.value.find(x => x._id === id)
-    if (b) b.status = 'returned'
-    window.dispatchEvent(new CustomEvent('borrow-status-changed'))
-  } catch (err) { alert(err.message) }
-}
-
 onMounted(loadBorrows)
 </script>
 
@@ -286,8 +267,6 @@ onMounted(loadBorrows)
 .action-button.approve:hover { background: #0f4d2d !important; }
 .action-button.reject { background: #a63d38 !important; border-color: #84302c !important; color: #fff !important; }
 .action-button.reject:hover { background: #84302c !important; }
-.action-button.confirm-return { background: #285a86 !important; border-color: #1e476b !important; color: #fff !important; }
-.action-button.confirm-return:hover { background: #1e476b !important; }
 
 .action-column {
   width: 88px;
@@ -299,7 +278,6 @@ onMounted(loadBorrows)
 .reader-col { width: 190px; }
 .book-col { width: 180px; }
 .fee-col { width: 130px; }
-.employee-col { width: 130px; }
 .date-col { width: 115px; }
 .status-col { width: 125px; }
 .actions-col { width: 88px; }

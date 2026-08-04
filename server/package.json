@@ -9,6 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "data:import": "node seeder.js",
     "data:books": "node addBooks.js",
+    "data:normalize-categories": "node normalizeBookCategories.js",
     "data:covers": "node syncBookCovers.js",
     "data:catalog-covers": "node syncCatalogCovers.js"
   },

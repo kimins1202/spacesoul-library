@@ -7,16 +7,16 @@ const {
   updateBook,
   deleteBook,
 } = require("../controllers/bookController");
-const { protect, employee } = require("../middlewares/authMiddleware");
+const { protect, admin } = require("../middlewares/authMiddleware");
 
 // Route cho users
 router.route("/").get(getBooks);
 router.route("/:id").get(getBookById);
 
-// Route cho admin/nhân viên
-router.route("/").post(protect, employee, createBook);
+// Route dành riêng cho quản trị viên
+router.route("/").post(protect, admin, createBook);
 router
   .route("/:id")
-  .put(protect, employee, updateBook)
-  .delete(protect, employee, deleteBook);
+  .put(protect, admin, updateBook)
+  .delete(protect, admin, deleteBook);
 module.exports = router;

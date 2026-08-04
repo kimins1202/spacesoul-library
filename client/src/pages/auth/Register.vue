@@ -31,10 +31,10 @@
         </div>
 
         <form @submit.prevent="handleRegister" class="space-y-5">
-          <!-- Họ lót & Tên -->
+          <!-- Họ & Tên -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-[11px] font-bold text-[#1f3728] uppercase tracking-wider mb-2">Họ lót</label>
+              <label class="block text-[11px] font-bold text-[#1f3728] uppercase tracking-wider mb-2">Họ</label>
               <div class="relative">
                 <UserIcon class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input

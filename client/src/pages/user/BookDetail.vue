@@ -60,7 +60,7 @@
               <ShoppingBag />{{ inCart ? 'Đã thêm vào giỏ mượn' : 'Thêm vào giỏ mượn' }}
             </button>
           </div>
-          <p class="action-note"><Info /> Yêu cầu sẽ được thủ thư xác nhận trước khi bạn đến nhận sách.</p>
+          <p class="action-note"><Info /> Yêu cầu sẽ được quản trị viên duyệt trước khi bạn đến nhận sách.</p>
 
           <div class="metadata">
             <div><Building2 /><span>Nhà xuất bản<strong>{{ book.publisher?.name || 'Đang cập nhật' }}</strong></span></div>
@@ -80,7 +80,7 @@
             <div>
               <span><b>01</b>Gửi yêu cầu trực tuyến</span>
               <ArrowRight />
-              <span><b>02</b>Chờ thủ thư xác nhận</span>
+              <span><b>02</b>Chờ quản trị viên duyệt</span>
               <ArrowRight />
               <span><b>03</b>Nhận sách tại quầy</span>
             </div>
@@ -105,6 +105,7 @@ import {
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
+import { categoryLabel } from '@/utils/categories'
 import { borrowService } from '@/services/borrow'
 import { addToCart, isInCart } from '@/stores/useAppStore'
 import { authService } from '@/services/auth'
@@ -120,7 +121,6 @@ let toastTimer
 
 const inCart = computed(() => book.value ? isInCart(book.value._id) : false)
 const formatCurrency = value => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0)
-const categoryLabel = value => ({ vanhoc: 'Văn học', kynang: 'Kỹ năng', khoahoc: 'Khoa học', taichinh: 'Tài chính', congnghe: 'Công nghệ', thieunhi: 'Thiếu nhi' }[value] || value || 'Sách')
 const showToast = message => {
   toastMsg.value = message
   clearTimeout(toastTimer)
@@ -145,8 +145,8 @@ const ensureReader = () => {
     router.push({ path: '/login', query: { redirect: route.fullPath } })
     return false
   }
-  if (authService.getCurrentUser()?.type === 'Employee') {
-    showToast('Tài khoản nhân viên không thể gửi yêu cầu mượn.')
+  if (authService.getCurrentUser()?.role === 'admin') {
+    showToast('Tài khoản quản trị không thể gửi yêu cầu mượn.')
     return false
   }
   return true

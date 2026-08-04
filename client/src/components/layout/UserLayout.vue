@@ -29,7 +29,7 @@
             <span class="absolute -bottom-0.5 left-0 w-full h-[2px] bg-[#1f3728] transition-transform duration-300 origin-left"
               :class="route.path.startsWith('/books') ? 'scale-x-100' : 'scale-x-0'"></span>
           </router-link>
-          <router-link v-if="isLoggedIn && !isEmployee" to="/borrowed" class="text-[11px] font-bold uppercase tracking-wider transition-colors relative py-1 group"
+          <router-link v-if="isLoggedIn && !isAdminAccount" to="/borrowed" class="text-[11px] font-bold uppercase tracking-wider transition-colors relative py-1 group"
             :class="route.path.startsWith('/borrowed') ? 'text-[#1f3728]' : 'text-gray-500 hover:text-[#1f3728]'">
             Yêu cầu mượn
             <span class="absolute -bottom-0.5 left-0 w-full h-[2px] bg-[#1f3728] transition-transform duration-300 origin-left"
@@ -52,7 +52,7 @@
         <!-- Right Side Actions -->
         <div class="flex items-center gap-2 flex-shrink-0">
           <!-- Cart Button -->
-          <div class="relative" v-if="isLoggedIn && !isEmployee">
+          <div class="relative" v-if="isLoggedIn && !isAdminAccount">
             <button @click="toggleCart"
               class="relative p-2 rounded-xl text-gray-600 hover:text-[#1f3728] hover:bg-gray-100 transition-all">
               <ShoppingBag class="w-5 h-5" />
@@ -117,7 +117,7 @@
         <LibraryBig /><span>Danh mục</span>
       </router-link>
       <router-link
-        v-if="isLoggedIn && !isEmployee"
+        v-if="isLoggedIn && !isAdminAccount"
         to="/borrowed"
         :class="{ active: route.path.startsWith('/borrowed') }"
       >
@@ -275,7 +275,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   UserCircle, ShoppingBag, BookOpen, BookPlus, X, Trash2,
@@ -284,9 +284,10 @@ import {
 } from 'lucide-vue-next'
 import { authService } from '@/services/auth'
 import { borrowService } from '@/services/borrow'
+import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
 import {
-  cart, cartCount, removeFromCart, clearCart
+  cart, cartCount, removeFromCart, clearCart, syncCartWithBooks
 } from '@/stores/useAppStore'
 
 const route = useRoute()
@@ -298,7 +299,7 @@ const isBorrowing = ref(false)
 
 const isLoggedIn = computed(() => authService.isAuthenticated())
 const currentUser = computed(() => authService.getCurrentUser())
-const isEmployee = computed(() => currentUser.value?.type === 'Employee')
+const isAdminAccount = computed(() => currentUser.value?.role === 'admin')
 const userName = computed(() => {
   const u = currentUser.value
   if (!u) return ''
@@ -308,8 +309,19 @@ const userInitial = computed(() => currentUser.value?.firstName?.charAt(0)?.toUp
 
 const totalCartPrice = computed(() => cart.value.reduce((sum, item) => sum + (item.price || 0), 0))
 
-const toggleCart = () => {
+const refreshCart = async () => {
+  if (!cart.value.length) return
+  try {
+    const response = await bookService.getBooks()
+    syncCartWithBooks(Array.isArray(response) ? response : (response.data || []))
+  } catch (error) {
+    console.error('Không thể đồng bộ giỏ mượn:', error)
+  }
+}
+
+const toggleCart = async () => {
   showCart.value = !showCart.value
+  if (showCart.value) await refreshCart()
 }
 
 const borrowAllFromCart = async () => {
@@ -348,6 +360,8 @@ const handleLogout = () => {
   authService.logout()
   router.replace('/login')
 }
+
+onMounted(refreshCart)
 
 </script>
 

@@ -100,7 +100,7 @@
           <div>
             <span>Nhận và trả sách</span>
             <h3>Thực hiện tại quầy thư viện</h3>
-            <p>Mang theo thông tin tài khoản để nhân viên xác nhận giao nhận sách.</p>
+            <p>Mang theo thông tin tài khoản để đối chiếu khi nhận sách.</p>
           </div>
         </article>
         <article class="notice-card">
@@ -190,33 +190,32 @@ const steps = [
     title: 'Chờ duyệt và đến thư viện',
     icon: LibraryBig,
     description: 'Theo dõi trạng thái yêu cầu. Khi được duyệt, bạn đến quầy thư viện để nhận sách.',
-    notes: ['Thời hạn được tính từ ngày duyệt', 'Nhân viên phụ trách được ghi nhận']
+    notes: ['Thời hạn được tính từ ngày duyệt', 'Trạng thái được cập nhật trên hệ thống']
   },
   {
     number: '04',
     kicker: 'Hoàn trả',
-    title: 'Gửi yêu cầu trả sách',
+    title: 'Trả sách trực tiếp',
     icon: RotateCcw,
-    description: 'Chọn yêu cầu trả trên hệ thống, mang sách đến quầy và chờ nhân viên xác nhận.',
-    notes: ['Sách được cộng lại vào kho sau xác nhận', 'Lịch sử mượn vẫn được lưu']
+    description: 'Nhấn Trả sách để hoàn tất ngay. Hệ thống tự cập nhật lịch sử và số bản có thể mượn.',
+    notes: ['Không cần gửi yêu cầu hoặc chờ duyệt', 'Lịch sử mượn vẫn được lưu']
   }
 ]
 
 const statuses = [
   { code: '01', name: 'Chờ duyệt', description: 'Yêu cầu đã được gửi.', icon: Hourglass },
-  { code: '02', name: 'Đang mượn', description: 'Nhân viên đã phê duyệt.', icon: BookMarked },
-  { code: '03', name: 'Chờ trả', description: 'Bạn đã gửi yêu cầu trả.', icon: AlertCircle },
-  { code: '04', name: 'Đã trả', description: 'Thư viện đã nhận lại sách.', icon: CircleCheck }
+  { code: '02', name: 'Đang mượn', description: 'Yêu cầu đã được phê duyệt.', icon: BookMarked },
+  { code: '03', name: 'Đã trả', description: 'Bạn đã hoàn tất trả sách.', icon: CircleCheck }
 ]
 
 const faqs = [
   {
     question: 'Tôi có thể mượn tối đa bao nhiêu cuốn?',
-    answer: 'Bạn có thể có tối đa 10 yêu cầu đang hoạt động, bao gồm chờ duyệt, đang mượn, chờ trả và quá hạn.'
+    answer: 'Bạn có thể có tối đa 10 yêu cầu đang hoạt động, bao gồm chờ duyệt, đang mượn và quá hạn.'
   },
   {
     question: 'Thời hạn mượn được tính như thế nào?',
-    answer: 'Thời hạn tiêu chuẩn là 14 ngày và bắt đầu tính từ thời điểm nhân viên phê duyệt yêu cầu mượn.'
+    answer: 'Thời hạn tiêu chuẩn là 14 ngày và bắt đầu tính từ thời điểm yêu cầu mượn được phê duyệt.'
   },
   {
     question: 'Tôi có thể hủy yêu cầu đã gửi không?',

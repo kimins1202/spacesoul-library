@@ -1,7 +1,7 @@
 import { api } from './api';
 
 export const userService = {
-  // Lấy hồ sơ cá nhân của mình (dùng cho cả Reader lẫn Employee)
+  // Lấy hồ sơ cá nhân của độc giả hoặc quản trị viên
   async getProfile() {
     return await api.get('/users/profile');
   },
@@ -26,28 +26,6 @@ export const userService = {
   // Xóa Độc giả
   async deleteReader(id) {
     return await api.delete(`/users/readers/${id}`);
-  },
-
-  // Khóa / Mở khóa tài khoản Độc giả
-  async toggleReaderStatus(id) {
-    return await api.put(`/users/readers/${id}/toggle-status`);
-  },
-
-  // ===== ADMIN: EMPLOYEE (NHÂN VIÊN) =====
-
-  // Lấy danh sách tất cả Nhân viên
-  async getAllEmployees() {
-    return await api.get('/users/employees');
-  },
-
-  // Tạo Nhân viên mới
-  async createEmployee(employeeData) {
-    return await api.post('/users/employees', employeeData);
-  },
-
-  // Xóa Nhân viên
-  async deleteEmployee(id) {
-    return await api.delete(`/users/employees/${id}`);
   },
 };
 

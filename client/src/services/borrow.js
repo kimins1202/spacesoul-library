@@ -33,13 +33,8 @@ export const borrowService = {
     return await api.put(`/borrows/${id}/approve`, {});
   },
 
-  // Yêu cầu trả sách (User)
-  async requestReturnBook(id) {
+  // Trả sách trực tiếp (User)
+  async returnBook(id) {
     return await api.put(`/borrows/${id}/return`, {});
-  },
-
-  // Xác nhận đã nhận lại sách trả (Admin)
-  async confirmReturnBook(id) {
-    return await api.put(`/borrows/${id}/confirm-return`, {});
   }
 };

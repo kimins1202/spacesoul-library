@@ -5,7 +5,7 @@ const readerSchema = new mongoose.Schema(
   {
     lastName: {
       type: String,
-      required: [true, "Vui lòng nhập họ lót"],
+      required: [true, "Vui lòng nhập họ"],
       trim: true,
     },
     firstName: {
@@ -41,11 +41,6 @@ const readerSchema = new mongoose.Schema(
     address: {
       type: String,
       default: "",
-    },
-    status: {
-      type: String,
-      enum: ["active", "locked"],
-      default: "active",
     },
     role: {
       type: String,

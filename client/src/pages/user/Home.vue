@@ -17,12 +17,9 @@
             </div>
             <select v-model="selectedCategory" aria-label="Chọn thể loại">
               <option value="">Tất cả thể loại</option>
-              <option value="vanhoc">Văn học</option>
-              <option value="kynang">Kỹ năng</option>
-              <option value="khoahoc">Khoa học</option>
-              <option value="congnghe">Công nghệ</option>
-              <option value="taichinh">Tài chính</option>
-              <option value="thieunhi">Thiếu nhi</option>
+              <option v-for="category in CATEGORY_OPTIONS" :key="category.value" :value="category.value">
+                {{ category.label }}
+              </option>
             </select>
             <select v-model="selectedStatus" aria-label="Chọn trạng thái">
               <option value="all">Trạng thái: Tất cả</option>
@@ -122,6 +119,7 @@ import {
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
+import { CATEGORY_OPTIONS, categoryLabel } from '@/utils/categories'
 
 const router = useRouter()
 const books = ref([])
@@ -156,11 +154,6 @@ const featuredBooks = computed(() => [...books.value]
   .slice(0, 4))
 
 const formatCurrency = value => new Intl.NumberFormat('vi-VN').format(value || 0)
-const categoryLabel = value => ({
-  vanhoc: 'Văn học', kynang: 'Kỹ năng', khoahoc: 'Khoa học',
-  taichinh: 'Tài chính', congnghe: 'Công nghệ', thieunhi: 'Thiếu nhi'
-}[value] || value || 'Sách')
-
 const goToBooks = () => {
   const query = {}
   if (searchQuery.value.trim()) query.q = searchQuery.value.trim()

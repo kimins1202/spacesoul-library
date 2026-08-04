@@ -36,7 +36,7 @@
                 </div>
                 <div>
                   <p class="font-bold text-[#1f3728] group-hover:text-blue-700 transition-colors cursor-pointer line-clamp-1">{{ book.title }}</p>
-                  <p class="text-[11px] text-gray-500 mt-0.5">Thể loại: {{ book.category }}</p>
+                  <p class="text-[11px] text-gray-500 mt-0.5">Thể loại: {{ categoryLabel(book.category) }}</p>
                 </div>
               </div>
             </td>
@@ -100,7 +100,10 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Thể loại <span class="text-red-500">*</span></label>
-                <input v-model="form.category" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1f3728]/20 focus:border-[#1f3728] transition-colors">
+                <select v-model="form.category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1f3728]/20 focus:border-[#1f3728] transition-colors bg-white">
+                  <option value="" disabled>Chọn thể loại</option>
+                  <option v-for="category in CATEGORY_OPTIONS" :key="category.value" :value="category.value">{{ category.label }}</option>
+                </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Đơn giá (VNĐ) <span class="text-red-500">*</span></label>
@@ -156,6 +159,7 @@ import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
 import PaginationControls from '@/components/admin/PaginationControls.vue'
 import publisherService from '@/services/publisher'
+import { CATEGORY_OPTIONS, categoryLabel, normalizeCategory } from '@/utils/categories'
 
 const books = ref([])
 const publishers = ref([])
@@ -243,7 +247,7 @@ const openEditModal = (book) => {
   form.value = {
     title: book.title,
     author: book.author,
-    category: book.category,
+    category: normalizeCategory(book.category),
     price: book.price,
     publisher: book.publisher ? book.publisher._id : '',
     publishYear: book.publishYear,

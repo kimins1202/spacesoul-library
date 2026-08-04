@@ -79,8 +79,8 @@
                 <button v-if="borrow.status === 'pending'" class="cancel" @click="handleCancel(borrow._id)">
                   <X class="w-4 h-4" /> Hủy yêu cầu
                 </button>
-                <button v-if="borrow.status === 'borrowing' || borrow.status === 'overdue'" class="return" @click="handleRequestReturn(borrow._id)">
-                  <Undo2 class="w-4 h-4" /> Yêu cầu trả sách
+                <button v-if="['borrowing', 'overdue', 'pending-return'].includes(borrow.status)" class="return" @click="handleReturn(borrow._id)">
+                  <Undo2 class="w-4 h-4" /> Trả sách
                 </button>
                 <router-link v-if="borrow.book?._id" :to="`/books/${borrow.book._id}`">Xem chi tiết</router-link>
               </div>
@@ -103,6 +103,7 @@ import {
   History, Loader2, PackageCheck, Plus, RefreshCw, Undo2, X
 } from 'lucide-vue-next'
 import { borrowService } from '@/services/borrow'
+import { categoryLabel } from '@/utils/categories'
 import BookCover from '@/components/books/BookCover.vue'
 
 const myBorrows = ref([])
@@ -144,10 +145,6 @@ const formatCurrency = value => value
 const isOverdue = borrow => borrow.status === 'overdue' || (
   borrow.dueDate && ['borrowing'].includes(borrow.status) && new Date(borrow.dueDate) < new Date()
 )
-const categoryLabel = value => ({
-  vanhoc: 'Văn học', kynang: 'Kỹ năng', khoahoc: 'Khoa học',
-  taichinh: 'Tài chính', congnghe: 'Công nghệ', thieunhi: 'Thiếu nhi'
-}[value] || value || 'Sách')
 const statusLabel = status => ({
   pending: 'Chờ duyệt', borrowing: 'Đang mượn', 'pending-return': 'Chờ xác nhận trả',
   returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy'
@@ -157,11 +154,11 @@ const statusIcon = status => ({
   returned: CheckCircle2, overdue: AlertCircle, cancelled: X
 }[status] || CircleDashed)
 const statusDescription = borrow => ({
-  pending: 'Thủ thư đang kiểm tra tình trạng sách và sẽ phản hồi yêu cầu của bạn.',
+  pending: 'Quản trị viên đang kiểm tra tình trạng sách và sẽ phản hồi yêu cầu của bạn.',
   borrowing: `Bạn đang giữ sách. Vui lòng hoàn trả trước ngày ${formatDate(borrow.dueDate)}.`,
-  'pending-return': 'Yêu cầu trả đã được gửi. Vui lòng mang sách đến quầy để thủ thư xác nhận.',
-  returned: `Sách đã được xác nhận hoàn trả ngày ${formatDate(borrow.returnDate)}.`,
-  overdue: 'Sách đã quá hạn. Vui lòng gửi yêu cầu trả và liên hệ thư viện sớm nhất.',
+  'pending-return': 'Phiếu cũ đang chờ trả. Nhấn Trả sách để hoàn tất ngay.',
+  returned: `Sách đã được hoàn trả ngày ${formatDate(borrow.returnDate)}.`,
+  overdue: 'Sách đã quá hạn. Vui lòng trả sách và liên hệ thư viện sớm nhất.',
   cancelled: 'Yêu cầu này đã được hủy và không còn hiệu lực.'
 }[borrow.status] || '')
 
@@ -196,12 +193,12 @@ const handleCancel = async id => {
   }
 }
 
-const handleRequestReturn = async id => {
+const handleReturn = async id => {
   try {
-    const updated = await borrowService.requestReturnBook(id)
+    const updated = await borrowService.returnBook(id)
     const index = myBorrows.value.findIndex(item => item._id === id)
     if (index !== -1) myBorrows.value[index] = { ...myBorrows.value[index], ...updated }
-    showToast('Đã gửi yêu cầu trả sách đến thủ thư.')
+    showToast('Đã trả sách thành công.')
   } catch (error) {
     alert(error.message)
   }

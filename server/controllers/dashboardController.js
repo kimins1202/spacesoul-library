@@ -28,7 +28,7 @@ const getStats = asyncHandler(async (req, res) => {
     Reader.countDocuments(),
     Borrow.find()
       .populate("reader", "firstName lastName")
-      .populate("book", "title author cover")
+      .populate("book", "TenSach TacGia AnhBia")
       .sort({ createdAt: -1 })
       .limit(5),
     Borrow.aggregate([
@@ -54,8 +54,8 @@ const getStats = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: null,
-          totalCopies: { $sum: "$totalCopies" },
-          availableCopies: { $sum: "$availableCopies" }
+          totalCopies: { $sum: "$TongSoQuyen" },
+          availableCopies: { $sum: "$SoQuyenKhaDung" }
         }
       }
     ])

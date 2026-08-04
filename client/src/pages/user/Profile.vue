@@ -16,7 +16,7 @@
           <p class="text-white font-bold text-xl">{{ profile?.lastName }} {{ profile?.firstName }}</p>
           <p class="text-white/70 text-sm mt-0.5">{{ profile?.email }}</p>
           <span class="mt-2 inline-block bg-white/20 text-white/90 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
-            {{ profile?.type === 'Employee' ? 'Nhân viên' : 'Độc giả' }}
+            {{ profile?.type === 'Admin' ? 'Quản trị viên' : 'Độc giả' }}
           </span>
         </div>
       </div>
@@ -26,7 +26,7 @@
         <div v-if="!isEditing" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Họ lót</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Họ</p>
               <p class="text-sm font-medium text-gray-800">{{ profile?.lastName || '—' }}</p>
             </div>
             <div>
@@ -46,10 +46,6 @@
             <div v-if="profile?.type === 'Reader'">
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Giới tính</p>
               <p class="text-sm font-medium text-gray-800">{{ profile?.gender || '—' }}</p>
-            </div>
-            <div v-if="profile?.type === 'Employee'">
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Chức vụ</p>
-              <p class="text-sm font-medium text-gray-800">{{ profile?.position || '—' }}</p>
             </div>
           </div>
           <div>
@@ -71,7 +67,7 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Họ lót</label>
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Họ</label>
               <input v-model="editData.lastName" type="text" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1f3728]" />
             </div>
             <div>

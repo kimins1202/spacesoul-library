@@ -90,7 +90,7 @@ const routes = [
   {
     path: '/admin',
     component: AdminLayout,
-    meta: { requiresEmployee: true },
+    meta: { requiresAdmin: true },
     children: [
       {
         path: 'dashboard',
@@ -147,15 +147,15 @@ router.beforeEach((to, from, next) => {
     localStorage.removeItem('token')
   }
 
-  // Require employee (nhân viên / admin) for admin routes
-  if (to.matched.some(record => record.meta.requiresEmployee)) {
-    if (!token || !user || user.type !== 'Employee') {
+  // Khu vực quản trị chỉ dành cho Admin.
+  if (to.matched.some(record => record.meta.requiresAdmin)) {
+    if (!token || !user || user.role !== 'admin') {
       return next('/login')
     }
   }
 
   if (to.matched.some(record => record.meta.requiresReader)) {
-    if (!token || !user || user.type === 'Employee') {
+    if (!token || !user || user.role === 'admin') {
       return next('/login')
     }
   }
@@ -170,7 +170,7 @@ router.beforeEach((to, from, next) => {
     'contact'
   ])
 
-  if (user?.type === 'Employee' && userPortalRoutes.has(to.name)) {
+  if (user?.role === 'admin' && userPortalRoutes.has(to.name)) {
     return next('/admin/dashboard')
   }
 

@@ -1,5 +1,5 @@
 const Reader = require("../models/Reader");
-const Employee = require("../models/Employee");
+const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 
@@ -8,11 +8,11 @@ const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
 
-    // Check if email exists in either Reader or Employee
+    // Email không được trùng giữa độc giả và quản trị viên.
     const readerExists = await Reader.findOne({ email });
-    const employeeExists = await Employee.findOne({ email });
+    const adminExists = await Admin.findOne({ email, role: "admin" });
     
-    if (readerExists || employeeExists) {
+    if (readerExists || adminExists) {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
 
@@ -48,17 +48,12 @@ const loginUser = async (req, res) => {
     let type = 'Reader';
     
     if (!user) {
-      user = await Employee.findOne({ email });
-      type = 'Employee';
+      user = await Admin.findOne({ email, role: "admin" });
+      type = 'Admin';
     }
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
-    }
-
-    // Kiểm tra tài khoản bị khóa
-    if (user.status === "locked") {
-      return res.status(403).json({ message: "Tài khoản đã bị khóa" });
     }
 
     res.json({

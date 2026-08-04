@@ -47,6 +47,24 @@ export function clearCart() {
   cartItems.value = []
 }
 
+export function syncCartWithBooks(books) {
+  const latestBooks = new Map((books || []).map(book => [book._id, book]))
+  cartItems.value = cartItems.value
+    .filter(item => latestBooks.has(item._id))
+    .map(item => {
+      const book = latestBooks.get(item._id)
+      return {
+        _id: book._id,
+        title: book.title,
+        author: book.author,
+        cover: book.cover,
+        price: book.price,
+        category: book.category,
+        availableCopies: book.availableCopies
+      }
+    })
+}
+
 export function isInCart(bookId) {
   return cartItems.value.some(b => b._id === bookId)
 }

@@ -36,7 +36,7 @@
                 </label>
                 <label v-for="cat in categories" :key="cat" class="flex items-center gap-3 cursor-pointer group">
                   <input type="radio" v-model="selectedCategory" :value="cat" name="category" class="w-4 h-4 text-[#1f3728] focus:ring-[#1f3728]">
-                  <span class="text-sm text-gray-600 font-medium group-hover:text-[#1f3728] transition-colors capitalize">{{ cat }}</span>
+                  <span class="text-sm text-gray-600 font-medium group-hover:text-[#1f3728] transition-colors">{{ categoryLabel(cat) }}</span>
                 </label>
               </div>
             </div>
@@ -100,7 +100,7 @@
               <p class="text-xs text-gray-500 font-medium mb-1">{{ book.author }}</p>
               <p class="text-xs text-orange-600 font-bold mb-3 mt-auto">{{ formatCurrency(book.price) }} đ / lượt</p>
               <div class="flex flex-wrap gap-1">
-                <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase tracking-wider">{{ book.category }}</span>
+                <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase tracking-wider">{{ categoryLabel(book.category) }}</span>
               </div>
             </router-link>
           </div>
@@ -145,6 +145,7 @@ import {
 } from 'lucide-vue-next'
 import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
+import { categoryLabel, normalizeCategory } from '@/utils/categories'
 
 const books = ref([])
 const categories = ref([])
@@ -166,8 +167,9 @@ const loadBooks = async () => {
     books.value = Array.isArray(res) ? res : (res.data || [])
     
     // Extract unique categories
-    const cats = new Set(books.value.map(b => b.category))
+    const cats = new Set(books.value.map(b => normalizeCategory(b.category)))
     categories.value = Array.from(cats).filter(Boolean)
+    if (selectedCategory.value) selectedCategory.value = normalizeCategory(selectedCategory.value)
   } catch (error) {
     console.error('Lỗi khi tải sách:', error)
   }
@@ -188,7 +190,8 @@ const filteredBooks = computed(() => {
       book.author.toLowerCase().includes(searchQuery.value.toLowerCase())
       
     // Category filter
-    const matchesCategory = selectedCategory.value === '' || book.category.toLowerCase() === selectedCategory.value.toLowerCase()
+    const matchesCategory = selectedCategory.value === '' ||
+      normalizeCategory(book.category) === normalizeCategory(selectedCategory.value)
     
     // Status filter
     let matchesStatus = true

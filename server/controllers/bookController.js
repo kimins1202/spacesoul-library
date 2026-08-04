@@ -12,7 +12,7 @@ const hasValidInventory = ({ totalCopies, availableCopies }) => (
 //Lấy danh sách tất cả sách
 const getBooks = async (req, res) => {
   try {
-    const books = await Book.find().populate("publisher");
+    const books = await Book.find().populate("MaNhaXuatBan");
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -25,7 +25,7 @@ const getBookById = async (req, res) => {
     if (!isValidId(req.params.id)) {
       return res.status(400).json({ message: "Mã sách không hợp lệ" });
     }
-    const book = await Book.findById(req.params.id).populate("publisher");
+    const book = await Book.findById(req.params.id).populate("MaNhaXuatBan");
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
     }
@@ -68,6 +68,7 @@ const updateBook = async (req, res) => {
     const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
+      translateAliases: true,
     });
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });

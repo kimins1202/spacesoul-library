@@ -1,89 +1,44 @@
 const mongoose = require("mongoose");
+const { normalizeCategory } = require("../utils/categories");
 
 const bookSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: [true, "Vui lòng nhập tên sách"],
-      trim: true,
-    },
-    author: {
-      type: String,
-      required: [true, "Vui lòng nhập tên tác giả"],
-      trim: true,
-    },
-    price: {
-      type: Number,
-      required: [true, "Vui lòng nhập đơn giá"],
-      min: 0,
-    },
-    publishYear: {
-      type: Number,
-      required: [true, "Vui lòng nhập năm xuất bản"],
-    },
-    publisher: {
+    TenSach: { type: String, alias: "title", required: [true, "Vui lòng nhập tên sách"], trim: true },
+    TacGia: { type: String, alias: "author", required: [true, "Vui lòng nhập tên tác giả"], trim: true },
+    DonGia: { type: Number, alias: "price", required: [true, "Vui lòng nhập đơn giá"], min: 0 },
+    NamXuatBan: { type: Number, alias: "publishYear", required: [true, "Vui lòng nhập năm xuất bản"] },
+    MaNhaXuatBan: {
       type: mongoose.Schema.Types.ObjectId,
+      alias: "publisher",
       ref: "Publisher",
       required: [true, "Vui lòng chọn nhà xuất bản"],
     },
-    category: {
-      type: String,
-      required: [true, "Vui lòng nhập thể loại"],
-      lowercase: true,
-    },
-    cover: {
-      type: String,
-      default: "",
-    },
-    description: {
-      type: String,
-      default: "",
-    },
-    totalCopies: {
-      type: Number,
-      default: 1,
-      min: 0,
-    },
-    availableCopies: {
-      type: Number,
-      default: 1,
-      min: 0,
-    },
-    rating: {
-      type: Number,
-      default: 0.0,
-    },
-    isbn: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-    pages: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-    language: {
-      type: String,
-      default: "Tiếng Việt",
-    },
-    shelfLocation: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+    TheLoai: { type: String, alias: "category", required: true, set: normalizeCategory },
+    AnhBia: { type: String, alias: "cover", default: "" },
+    MoTa: { type: String, alias: "description", default: "" },
+    TongSoQuyen: { type: Number, alias: "totalCopies", default: 1, min: 0 },
+    SoQuyenKhaDung: { type: Number, alias: "availableCopies", default: 1, min: 0 },
+    DanhGia: { type: Number, alias: "rating", default: 0 },
+    ISBN: { type: String, alias: "isbn", default: "", trim: true },
+    SoTrang: { type: Number, alias: "pages", default: 0, min: 0 },
+    NgonNgu: { type: String, alias: "language", default: "Tiếng Việt" },
+    ViTriKe: { type: String, alias: "shelfLocation", default: "", trim: true },
   },
   {
-    timestamps: true,
-  },
+    timestamps: { createdAt: "NgayTao", updatedAt: "NgayCapNhat" },
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
+bookSchema.virtual("MaSach").get(function () {
+  return this._id;
+});
+
 bookSchema.pre("validate", function () {
-  if (this.availableCopies > this.totalCopies) {
-    this.invalidate("availableCopies", "Số bản khả dụng không được lớn hơn tổng số bản");
+  if (this.SoQuyenKhaDung > this.TongSoQuyen) {
+    this.invalidate("SoQuyenKhaDung", "Số quyển khả dụng không được lớn hơn tổng số quyển");
   }
 });
 
-const Book = mongoose.model("Book", bookSchema);
-
-module.exports = Book;
+module.exports = mongoose.model("Book", bookSchema);

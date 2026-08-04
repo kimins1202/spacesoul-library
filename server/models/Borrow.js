@@ -7,11 +7,6 @@ const borrowSchema = new mongoose.Schema(
       ref: "Reader",
       required: true,
     },
-    employee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-      default: null,
-    },
     book: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Book",

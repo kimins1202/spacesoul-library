@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
-const Employee = require("./models/Employee");
+const Admin = require("./models/Admin");
 const Reader = require("./models/Reader");
 const Book = require("./models/Book");
 const Publisher = require("./models/Publisher");
@@ -20,7 +20,7 @@ mongoose
 const importData = async () => {
   try {
     // 1. Clear database
-    await Employee.deleteMany();
+    await Admin.deleteMany();
     await Reader.deleteMany();
     await Book.deleteMany();
     await Publisher.deleteMany();
@@ -36,25 +36,13 @@ const importData = async () => {
 
     console.log("Data Destroyed!");
 
-    // 2. Create Employees (Admin and Staff)
-    const admin = await Employee.create({
+    // 2. Create the system administrator
+    const admin = await Admin.create({
       firstName: "Admin",
       lastName: "System",
       email: "admin@admin.com",
       password: "password123", // Will be hashed by pre-save hook
-      position: "Quản trị hệ thống",
       role: "admin",
-      status: "active"
-    });
-
-    const staff = await Employee.create({
-      firstName: "Staff",
-      lastName: "Library",
-      email: "staff@staff.com",
-      password: "password123",
-      position: "Thủ thư",
-      role: "staff",
-      status: "active"
     });
 
     // 3. Create Readers

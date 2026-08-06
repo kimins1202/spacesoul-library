@@ -20,14 +20,27 @@ connectDB();
 // middleware
 const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
   .split(",")
-  .map(origin => origin.trim())
+  .map(origin => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
+
+const isAllowedOrigin = origin => {
+  if (!origin) return true;
+
+  const normalizedOrigin = origin.replace(/\/$/, "");
+  if (allowedOrigins.length === 0 || allowedOrigins.includes(normalizedOrigin)) {
+    return true;
+  }
+
+  // Allow the production alias and Vercel preview deployments of this project.
+  return /^https:\/\/spacesoul-library(?:-[a-z0-9-]+)?\.vercel\.app$/i.test(normalizedOrigin);
+};
 
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
+    console.warn(`CORS rejected origin: ${origin}`);
     return callback(new Error("Origin không được CORS cho phép"));
   },
 }));

@@ -53,8 +53,18 @@
           </div>
 
           <div class="actions">
-            <button class="primary-action" @click="handleBorrowNow" :disabled="book.availableCopies < 1">
-              <BookPlus />{{ book.availableCopies > 0 ? 'Gửi yêu cầu mượn' : 'Sách đang được mượn hết' }}
+            <div class="quantity-picker">
+              <span>Số lượng muốn mượn</span>
+              <div>
+                <button type="button" @click="decreaseQuantity" :disabled="borrowQuantity <= 1" aria-label="Giảm số lượng">−</button>
+                <input v-model.number="borrowQuantity" type="number" min="1" :max="maxBorrowQuantity" @change="normalizeQuantity" aria-label="Số lượng sách muốn mượn" />
+                <button type="button" @click="increaseQuantity" :disabled="borrowQuantity >= maxBorrowQuantity" aria-label="Tăng số lượng">+</button>
+              </div>
+              <small>Tối đa {{ maxBorrowQuantity }} quyển cho đầu sách này</small>
+            </div>
+            <button class="primary-action" @click="handleBorrowNow" :disabled="book.availableCopies < 1 || isBorrowing">
+              <Loader2 v-if="isBorrowing" class="animate-spin" />
+              <BookPlus v-else />{{ book.availableCopies > 0 ? `Mượn ${borrowQuantity} quyển` : 'Sách đang được mượn hết' }}
             </button>
             <button @click="handleAddToCart" :disabled="book.availableCopies < 1 || inCart" :class="['secondary-action', { added: inCart }]">
               <ShoppingBag />{{ inCart ? 'Đã thêm vào giỏ mượn' : 'Thêm vào giỏ mượn' }}
@@ -90,7 +100,11 @@
     </div>
 
     <transition name="toast">
-      <div v-if="toastMsg" class="toast"><CheckCircle2 />{{ toastMsg }}</div>
+      <div v-if="toastMsg" :class="['toast', `toast-${toastType}`]">
+        <CheckCircle2 v-if="toastType === 'success'" />
+        <CircleX v-else />
+        {{ toastMsg }}
+      </div>
     </transition>
   </div>
 </template>
@@ -117,12 +131,17 @@ const book = ref(null)
 const isLoading = ref(true)
 const errorMessage = ref('')
 const toastMsg = ref('')
+const toastType = ref('success')
+const borrowQuantity = ref(1)
+const isBorrowing = ref(false)
 let toastTimer
 
 const inCart = computed(() => book.value ? isInCart(book.value._id) : false)
+const maxBorrowQuantity = computed(() => Math.max(1, Math.min(10, Number(book.value?.availableCopies) || 1)))
 const formatCurrency = value => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0)
-const showToast = message => {
+const showToast = (message, type = 'success') => {
   toastMsg.value = message
+  toastType.value = type
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => { toastMsg.value = '' }, 3000)
 }
@@ -132,6 +151,7 @@ const fetchBook = async () => {
   errorMessage.value = ''
   try {
     book.value = await bookService.getBookById(route.params.id)
+    borrowQuantity.value = 1
   } catch (error) {
     book.value = null
     errorMessage.value = error.message || 'Sách không tồn tại hoặc đã được xóa.'
@@ -146,7 +166,7 @@ const ensureReader = () => {
     return false
   }
   if (authService.getCurrentUser()?.role === 'admin') {
-    showToast('Tài khoản quản trị không thể gửi yêu cầu mượn.')
+    showToast('Tài khoản quản trị không thể gửi yêu cầu mượn.', 'error')
     return false
   }
   return true
@@ -154,18 +174,31 @@ const ensureReader = () => {
 
 const handleAddToCart = () => {
   if (!ensureReader()) return
-  if (addToCart(book.value)) showToast(`Đã thêm “${book.value.title}” vào giỏ mượn.`)
+  if (addToCart(book.value, borrowQuantity.value)) {
+    showToast(`Đã thêm ${borrowQuantity.value} quyển “${book.value.title}” vào giỏ mượn.`)
+  }
 }
 
 const handleBorrowNow = async () => {
   if (!ensureReader()) return
+  normalizeQuantity()
+  isBorrowing.value = true
   try {
-    await borrowService.createBorrowRequest(book.value._id)
-    router.push('/borrowed')
+    await borrowService.createBorrowRequest(book.value._id, borrowQuantity.value)
+    router.push({ path: '/borrowed', query: { notice: 'borrow-success' } })
   } catch (error) {
-    showToast(error.message || 'Không thể gửi yêu cầu mượn.')
+    showToast(error.message || 'Không thể gửi yêu cầu mượn.', 'error')
+  } finally {
+    isBorrowing.value = false
   }
 }
+
+const normalizeQuantity = () => {
+  const value = Math.trunc(Number(borrowQuantity.value) || 1)
+  borrowQuantity.value = Math.min(maxBorrowQuantity.value, Math.max(1, value))
+}
+const decreaseQuantity = () => { borrowQuantity.value = Math.max(1, borrowQuantity.value - 1) }
+const increaseQuantity = () => { borrowQuantity.value = Math.min(maxBorrowQuantity.value, borrowQuantity.value + 1) }
 
 watch(() => route.params.id, fetchBook, { immediate: true })
 </script>

@@ -15,8 +15,12 @@ const createBorrowRequest = async (req, res) => {
       return res.status(403).json({ message: "Chỉ độc giả mới có thể gửi yêu cầu mượn sách" });
     }
     const { bookId } = req.body;
+    const quantity = Number(req.body.quantity ?? 1);
     if (!isValidId(bookId)) {
       return res.status(400).json({ message: "Mã sách không hợp lệ" });
+    }
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+      return res.status(400).json({ message: "Số lượng mượn phải là số nguyên từ 1 đến 10" });
     }
     await syncOverdueBorrows();
     // Kiểm tra xem sách có tồn tại không
@@ -24,46 +28,32 @@ const createBorrowRequest = async (req, res) => {
     if (!bookRecord) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
     }
-    // Kiểm tra xem người dùng có đang mượn sách quá hạn không
-    const overdueBorrow = await Borrow.findOne({
-      reader: req.user._id,
-      status: "overdue",
-    });
-
-    if (overdueBorrow) {
+    // Giới hạn tổng số bản sách đang được giữ/mượn của một độc giả.
+    const activeQuantity = await Borrow.aggregate([
+      {
+        $match: {
+          reader: req.user._id,
+          status: { $in: ["pending", "borrowing", "pending-return", "overdue"] },
+        },
+      },
+      { $group: { _id: null, total: { $sum: { $ifNull: ["$quantity", 1] } } } },
+    ]);
+    const borrowedCopies = activeQuantity[0]?.total || 0;
+    if (borrowedCopies + quantity > 10) {
       return res
         .status(400)
-        .json({ message: "Bạn đang có sách quá hạn không thể mượn thêm" });
+        .json({ message: `Bạn chỉ có thể giữ tối đa 10 quyển (hiện đang có ${borrowedCopies})` });
     }
-    //Giới hạn số lượng mượn sách
-    const countBorrows = await Borrow.countDocuments({
-      reader: req.user._id,
-      status: { $in: ["pending", "borrowing", "pending-return", "overdue"] },
-    });
-    if (countBorrows >= 10) {
-      return res
-        .status(400)
-        .json({ message: "Bạn đã mượn quá số lượng sách cho phép" });
-    }
-    //Không gửi yêu cầu mượn sách nếu đã có yêu cầu mượn đang chờ xử lý
-    const existingBorrow = await Borrow.findOne({
-      reader: req.user._id,
-      book: bookId,
-      status: { $in: ["pending", "borrowing", "pending-return", "overdue"] },
-    });
-    if (existingBorrow) {
-      return res
-        .status(400)
-        .json({ message: "Bạn đã gửi yêu cầu mượn sách này" });
-    }
-    // Giữ chỗ một bản sách ngay khi tạo yêu cầu để số lượng hiển thị chính xác.
+    // Có thể tạo nhiều phiếu cho cùng một đầu sách; giới hạn được tính theo
+    // tổng số quyển đang hoạt động và số lượng còn trong kho.
+    // Giữ chỗ đúng số lượng ngay khi tạo yêu cầu để tránh mượn vượt tồn kho.
     const reservedBook = await Book.findOneAndUpdate(
-      { _id: bookId, SoQuyenKhaDung: { $gt: 0 } },
-      { $inc: { SoQuyenKhaDung: -1 } },
+      { _id: bookId, SoQuyenKhaDung: { $gte: quantity } },
+      { $inc: { SoQuyenKhaDung: -quantity } },
       { returnDocument: "after" }
     );
     if (!reservedBook) {
-      return res.status(400).json({ message: "Sách đã hết bản sao khả dụng" });
+      return res.status(400).json({ message: `Không đủ ${quantity} quyển sách khả dụng` });
     }
 
     // Tạo yêu cầu mượn sách mới
@@ -75,11 +65,12 @@ const createBorrowRequest = async (req, res) => {
       borrow = await Borrow.create({
         reader: req.user._id,
         book: bookId,
+        quantity,
         dueDate: tempDueDate,
         copyReserved: true,
       });
     } catch (error) {
-      await Book.updateOne({ _id: bookId }, { $inc: { SoQuyenKhaDung: 1 } });
+      await Book.updateOne({ _id: bookId }, { $inc: { SoQuyenKhaDung: quantity } });
       throw error;
     }
     res.status(201).json({ message: "Yêu cầu mượn sách thành công", borrow });
@@ -136,13 +127,14 @@ const approveBorrowRequest = async (req, res) => {
     }
     // Cập nhật trạng thái yêu cầu mượn và ngày mượn, ngày trả
     if (!borrow.copyReserved) {
+      const quantity = borrow.quantity || 1;
       const reservedBook = await Book.findOneAndUpdate(
-        { _id: borrow.book, SoQuyenKhaDung: { $gt: 0 } },
-        { $inc: { SoQuyenKhaDung: -1 } },
+        { _id: borrow.book, SoQuyenKhaDung: { $gte: quantity } },
+        { $inc: { SoQuyenKhaDung: -quantity } },
         { returnDocument: "after" }
       );
       if (!reservedBook) {
-        return res.status(400).json({ message: "Sách hiện đã hết bản có thể mượn" });
+        return res.status(400).json({ message: `Không đủ ${quantity} quyển sách để duyệt yêu cầu` });
       }
       borrow.copyReserved = true;
     }
@@ -212,8 +204,9 @@ const confirmBookReturn = async (req, res) => {
 
     if (shouldRestoreCopy) {
       await Book.updateOne(
-        { _id: borrow.book, $expr: { $lt: ["$SoQuyenKhaDung", "$TongSoQuyen"] } },
-        { $inc: { SoQuyenKhaDung: 1 } }
+        { _id: borrow.book },
+        [{ $set: { SoQuyenKhaDung: { $min: ["$TongSoQuyen", { $add: ["$SoQuyenKhaDung", borrow.quantity || 1] }] } } }],
+        { updatePipeline: true }
       );
     }
 
@@ -223,7 +216,7 @@ const confirmBookReturn = async (req, res) => {
   }
 };
 
-// Quản trị viên từ chối yêu cầu mượn đang chờ duyệt.
+// Độc giả hủy phiếu của mình hoặc quản trị viên từ chối phiếu đang chờ duyệt.
 const cancelBorrowRequest = async (req, res) => {
   try {
     if (!isValidId(req.params.id)) {
@@ -233,6 +226,12 @@ const cancelBorrowRequest = async (req, res) => {
     if (!borrow) {
       return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
     }
+    const isOwner = req.userType === "Reader"
+      && borrow.reader.toString() === req.user._id.toString();
+    const isAdmin = req.userType === "Admin";
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Bạn không có quyền hủy yêu cầu này" });
+    }
     // Kiểm tra trạng thái yêu cầu mượn
     if (borrow.status !== "pending") {
       return res
@@ -241,17 +240,17 @@ const cancelBorrowRequest = async (req, res) => {
     }
 
     if (borrow.copyReserved) {
-      const bookRecord = await Book.findById(borrow.book);
-      if (bookRecord && bookRecord.availableCopies < bookRecord.totalCopies) {
-        bookRecord.availableCopies += 1;
-        await bookRecord.save();
-      }
+      await Book.updateOne(
+        { _id: borrow.book },
+        [{ $set: { SoQuyenKhaDung: { $min: ["$TongSoQuyen", { $add: ["$SoQuyenKhaDung", borrow.quantity || 1] }] } } }],
+        { updatePipeline: true }
+      );
       borrow.copyReserved = false;
     }
 
     borrow.status = "cancelled";
     await borrow.save();
-    res.json(borrow);
+    res.status(200).json({ message: "Đã hủy yêu cầu mượn", borrow });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

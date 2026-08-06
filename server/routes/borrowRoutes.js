@@ -14,7 +14,7 @@ const { protect, admin } = require("../middlewares/authMiddleware");
 // Route cho độc giả tự quản lý mượn trả
 router.route("/").post(protect, createBorrowRequest);
 router.route("/myborrows").get(protect, getMyBorrows);
-router.route("/:id/cancel").put(protect, admin, cancelBorrowRequest);
+router.route("/:id/cancel").put(protect, cancelBorrowRequest);
 router.route("/:id/request-return").put(protect, requestBookReturn);
 router.route("/:id/confirm-return").put(protect, admin, confirmBookReturn);
 

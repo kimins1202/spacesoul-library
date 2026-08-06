@@ -1,6 +1,7 @@
 const Reader = require("../models/Reader");
 const Admin = require("../models/Admin");
 const jwt = require("jsonwebtoken");
+const { getJwtSecret } = require("../config/jwt");
 const protect = async (req, res, next) => {
   try {
     let token;
@@ -10,7 +11,7 @@ const protect = async (req, res, next) => {
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, getJwtSecret());
       
       if (decoded.type === 'Admin') {
         req.user = await Admin.findOne({ _id: decoded.id, role: "admin" }).select("-password");

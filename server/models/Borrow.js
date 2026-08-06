@@ -12,6 +12,13 @@ const borrowSchema = new mongoose.Schema(
       ref: "Book",
       required: true,
     },
+    quantity: {
+      type: Number,
+      required: true,
+      min: [1, "Số lượng mượn phải ít nhất là 1"],
+      max: [10, "Số lượng mượn không được vượt quá 10"],
+      default: 1,
+    },
     borrowDate: {
       type: Date,
       default: null,

@@ -191,6 +191,19 @@
                     Hết sách
                   </span>
                 </div>
+                <div class="cart-quantity mt-2" aria-label="Chọn số lượng mượn">
+                  <button type="button" @click="updateCartQuantity(item._id, (item.quantity || 1) - 1)" :disabled="(item.quantity || 1) <= 1">−</button>
+                  <input
+                    type="number"
+                    min="1"
+                    :max="maxQuantityForItem(item)"
+                    :value="item.quantity || 1"
+                    @change="updateCartQuantity(item._id, $event.target.value)"
+                    :aria-label="`Số lượng ${item.title}`"
+                  />
+                  <button type="button" @click="updateCartQuantity(item._id, (item.quantity || 1) + 1)" :disabled="(item.quantity || 1) >= maxQuantityForItem(item)">+</button>
+                  <span>/ {{ item.availableCopies }} quyển có sẵn</span>
+                </div>
               </div>
               <!-- Remove -->
               <button @click="removeFromCart(item._id)" title="Xóa khỏi giỏ" aria-label="Xóa sách khỏi giỏ"
@@ -202,8 +215,9 @@
 
           <!-- Footer -->
           <div v-if="cartCount > 0" class="px-6 py-5 border-t border-gray-100 bg-gray-50/80 space-y-3">
+            <div v-if="cartError" class="cart-error"><CircleAlert />{{ cartError }}</div>
             <div class="flex items-center justify-between text-sm">
-              <span class="text-gray-500 font-medium">Tổng cộng {{ cartCount }} cuốn sách</span>
+              <span class="text-gray-500 font-medium">Tổng cộng {{ cartCount }} quyển</span>
               <span class="font-bold text-[#1f3728]">
                 {{ new Intl.NumberFormat('vi-VN').format(totalCartPrice) }} đ
               </span>
@@ -280,14 +294,14 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   UserCircle, ShoppingBag, BookOpen, BookPlus, X, Trash2,
   ChevronDown, LogOut, Loader2, House, LibraryBig, ClipboardList,
-  CircleHelp, MapPinned
+  CircleHelp, MapPinned, CircleAlert
 } from 'lucide-vue-next'
 import { authService } from '@/services/auth'
 import { borrowService } from '@/services/borrow'
 import { bookService } from '@/services/book'
 import BookCover from '@/components/books/BookCover.vue'
 import {
-  cart, cartCount, removeFromCart, clearCart, syncCartWithBooks
+  cart, cartCount, removeFromCart, clearCart, syncCartWithBooks, updateCartQuantity
 } from '@/stores/useAppStore'
 
 const route = useRoute()
@@ -296,6 +310,7 @@ const router = useRouter()
 const showCart = ref(false)
 const showUserMenu = ref(false)
 const isBorrowing = ref(false)
+const cartError = ref('')
 
 const isLoggedIn = computed(() => authService.isAuthenticated())
 const currentUser = computed(() => authService.getCurrentUser())
@@ -307,7 +322,18 @@ const userName = computed(() => {
 })
 const userInitial = computed(() => currentUser.value?.firstName?.charAt(0)?.toUpperCase() || '?')
 
-const totalCartPrice = computed(() => cart.value.reduce((sum, item) => sum + (item.price || 0), 0))
+const totalCartPrice = computed(() => cart.value.reduce(
+  (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
+  0,
+))
+
+const maxQuantityForItem = item => {
+  const otherQuantity = cart.value.reduce(
+    (sum, book) => sum + (book._id === item._id ? 0 : (book.quantity || 1)),
+    0,
+  )
+  return Math.max(1, Math.min(item.availableCopies || 1, 10 - otherQuantity))
+}
 
 const refreshCart = async () => {
   if (!cart.value.length) return
@@ -330,11 +356,12 @@ const borrowAllFromCart = async () => {
     return
   }
   isBorrowing.value = true
+  cartError.value = ''
   const results = { success: 0, failed: 0, errors: [] }
 
   for (const item of [...cart.value]) {
     try {
-      await borrowService.createBorrowRequest(item._id)
+      await borrowService.createBorrowRequest(item._id, item.quantity || 1)
       removeFromCart(item._id)
       results.success++
     } catch (err) {
@@ -347,10 +374,12 @@ const borrowAllFromCart = async () => {
   showCart.value = false
 
   if (results.failed > 0) {
-    alert(`Không thể gửi ${results.failed} yêu cầu:\n${results.errors.join('\n')}`)
+    const successText = results.success > 0 ? `Đã gửi thành công ${results.success} yêu cầu. ` : ''
+    cartError.value = `${successText}Không thể gửi ${results.failed} yêu cầu: ${results.errors.join('; ')}`
+    showCart.value = true
   }
-  if (results.success > 0) {
-    router.push('/borrowed')
+  if (results.success > 0 && results.failed === 0) {
+    router.push({ path: '/borrowed', query: { notice: 'borrow-success' } })
   }
 }
 
@@ -423,6 +452,35 @@ onMounted(refreshCart)
 .cart-remove-button:focus-visible {
   opacity: 1;
 }
+
+.cart-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.cart-quantity button,
+.cart-quantity input {
+  width: 30px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d7ded8;
+  background: #fff;
+  color: #214b35;
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.cart-quantity button:first-child { border-radius: 7px 0 0 7px; }
+.cart-quantity button:nth-of-type(2) { border-radius: 0 7px 7px 0; }
+.cart-quantity input { border-right: 0; border-left: 0; outline: none; appearance: textfield; }
+.cart-quantity input::-webkit-inner-spin-button { appearance: none; }
+.cart-quantity button:disabled { opacity: .4; cursor: not-allowed; }
+.cart-quantity span { margin-left: 7px; color: #8a948d; font-size: .58rem; }
+.cart-error { padding: 10px 12px; display: flex; align-items: flex-start; gap: 7px; border: 1px solid #efc5c0; border-radius: 10px; background: #fff0ee; color: #a8433b; font-size: .7rem; line-height: 1.45; }
+.cart-error :deep(svg) { width: 16px; height: 16px; margin-top: 1px; flex: 0 0 auto; }
 
 .empty-cart-button {
   padding: 10px 20px;

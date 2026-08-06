@@ -38,12 +38,16 @@ const getBookById = async (req, res) => {
 //Tạo sách mới
 const createBook = async (req, res) => {
   try {
-    const totalCopies = req.body.totalCopies ?? 1;
-    const availableCopies = req.body.availableCopies ?? totalCopies;
-    if (!hasValidInventory({ totalCopies, availableCopies })) {
-      return res.status(400).json({ message: "Số bản khả dụng phải từ 0 đến tổng số bản" });
+    const totalCopies = Number(req.body.totalCopies ?? 1);
+    if (!Number.isInteger(totalCopies) || totalCopies < 1) {
+      return res.status(400).json({ message: "Tổng số sách phải là số nguyên lớn hơn 0" });
     }
-    const book = await Book.create(req.body);
+    // Sách vừa nhập kho chưa có bản nào được mượn, nên số khả dụng luôn bằng tổng số.
+    const book = await Book.create({
+      ...req.body,
+      totalCopies,
+      availableCopies: totalCopies,
+    });
     res.status(201).json({ message: "Đã thêm sách mới thành công", book });
   } catch (error) {
     res.status(500).json({ message: error.message });

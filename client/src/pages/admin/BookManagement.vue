@@ -14,7 +14,7 @@
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto flex-1">
+    <div class="admin-table-wrap overflow-x-auto flex-1">
       <table class="book-admin-table w-full text-left border-collapse min-w-[1080px]">
         <thead class="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm shadow-sm">
           <tr class="text-gray-500 text-xs uppercase tracking-wider">
@@ -126,7 +126,8 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Sách có sẵn <span class="text-red-500">*</span></label>
-                <input v-model.number="form.availableCopies" type="number" min="0" :max="form.totalCopies" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1f3728]/20 focus:border-[#1f3728] transition-colors">
+                <input v-model.number="form.availableCopies" type="number" min="0" :max="form.totalCopies" required :disabled="!isEdit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1f3728]/20 focus:border-[#1f3728] transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed">
+                <p v-if="!isEdit" class="mt-1 text-[11px] text-gray-500">Tự động bằng tổng số sách khi thêm mới.</p>
               </div>
             </div>
             
@@ -223,6 +224,12 @@ watch(() => filteredBooks.value.length, (total) => {
   currentPage.value = Math.min(currentPage.value, Math.max(1, Math.ceil(total / pageSize)))
 })
 
+watch(() => form.value.totalCopies, (total) => {
+  if (!isEdit.value) {
+    form.value.availableCopies = Math.max(1, Math.trunc(Number(total) || 1))
+  }
+})
+
 const openAddModal = () => {
   isEdit.value = false
   editingId.value = null
@@ -268,7 +275,10 @@ const saveBook = async () => {
     if (isEdit.value) {
       await bookService.updateBook(editingId.value, form.value)
     } else {
-      await bookService.createBook(form.value)
+      await bookService.createBook({
+        ...form.value,
+        availableCopies: form.value.totalCopies,
+      })
     }
     closeModal()
     await loadData()
@@ -359,5 +369,27 @@ onMounted(() => {
   .book-modal-footer button {
     width: 100%;
   }
+}
+
+@media (max-width: 767px) {
+  .admin-table-wrap { overflow: visible; padding: 10px; background: #f4f6f2; }
+  .book-admin-table { min-width: 0; display: block; }
+  .book-admin-table thead { display: none; }
+  .book-admin-table tbody { display: grid; gap: 12px; }
+  .book-admin-table tr { display: block; overflow: hidden; border: 1px solid #dfe5de; border-radius: 14px; background: #fff; box-shadow: 0 5px 16px rgba(25,48,34,.05); }
+  .book-admin-table td { width: 100% !important; min-width: 0 !important; padding: 10px 13px; display: grid; grid-template-columns: 96px minmax(0,1fr); align-items: center; gap: 10px; border: 0; border-bottom: 1px solid #edf0eb; text-align: left !important; }
+  .book-admin-table td::before { color: #7b877e; font-size: .62rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+  .book-admin-table td:nth-child(1)::before { content: "Sách"; }
+  .book-admin-table td:nth-child(2)::before { content: "Tác giả"; }
+  .book-admin-table td:nth-child(3)::before { content: "NXB / Năm"; }
+  .book-admin-table td:nth-child(4)::before { content: "Phí mượn"; }
+  .book-admin-table td:nth-child(5)::before { content: "Tồn kho"; }
+  .book-admin-table td:nth-child(6)::before { content: "Trạng thái"; }
+  .book-admin-table td:nth-child(7)::before { content: "Thao tác"; }
+  .book-admin-table td:first-child { padding-top: 14px; }
+  .book-admin-table td:last-child { border-bottom: 0; }
+  .book-admin-table td[colspan] { display: block; padding: 28px 14px; text-align: center !important; }
+  .book-admin-table td[colspan]::before { display: none; }
+  .admin-row-actions { justify-content: flex-start; }
 }
 </style>

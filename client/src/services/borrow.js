@@ -2,13 +2,14 @@ import { api } from './api';
 
 export const borrowService = {
   // Gửi yêu cầu mượn sách (User)
-  async createBorrowRequest(bookId, durationDays = 14) {
+  async createBorrowRequest(bookId, quantity = 1, durationDays = 14) {
     // Tính toán ngày trả dự kiến
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + durationDays);
     
     return await api.post('/borrows', {
       bookId,
+      quantity,
       dueDate: dueDate.toISOString()
     });
   },

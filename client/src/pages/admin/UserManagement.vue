@@ -12,7 +12,7 @@
     </div>
     <div v-else-if="errorMsg" class="flex flex-1 items-center justify-center py-16 text-sm font-medium text-red-500">{{ errorMsg }}</div>
 
-    <div v-else class="flex-1 overflow-x-auto">
+    <div v-else class="admin-table-wrap flex-1 overflow-x-auto">
       <table class="user-admin-table w-full min-w-[900px] border-collapse text-left">
         <thead class="sticky top-0 z-10 bg-gray-50/95 shadow-sm backdrop-blur-sm">
           <tr class="text-xs uppercase tracking-wider text-gray-500">
@@ -96,6 +96,24 @@ onMounted(loadReaders)
 .user-admin-table th, .user-admin-table td { vertical-align: middle; }
 .user-admin-table th { white-space: nowrap; }
 .user-admin-table th:last-child, .user-admin-table td:last-child { width: 112px; min-width: 112px; }
+
+@media (max-width: 767px) {
+  .admin-table-wrap { overflow: visible; padding: 10px; background: #f4f6f2; }
+  .user-admin-table { min-width: 0; display: block; }
+  .user-admin-table thead { display: none; }
+  .user-admin-table tbody { display: grid; gap: 12px; }
+  .user-admin-table tr { display: block; overflow: hidden; border: 1px solid #dfe5de; border-radius: 14px; background: #fff; box-shadow: 0 5px 16px rgba(25,48,34,.05); }
+  .user-admin-table td { width: 100% !important; min-width: 0 !important; padding: 11px 13px; display: grid; grid-template-columns: 98px minmax(0,1fr); align-items: center; gap: 10px; border: 0; border-bottom: 1px solid #edf0eb; background: transparent; text-align: left !important; }
+  .user-admin-table td::before { color: #7b877e; font-size: .62rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+  .user-admin-table td:nth-child(1)::before { content: "Độc giả"; }
+  .user-admin-table td:nth-child(2)::before { content: "Thông tin"; }
+  .user-admin-table td:nth-child(3)::before { content: "Điện thoại"; }
+  .user-admin-table td:nth-child(4)::before { content: "Thao tác"; }
+  .user-admin-table td:last-child { border-bottom: 0; }
+  .user-admin-table td[colspan] { display: block; padding: 28px 14px; text-align: center !important; }
+  .user-admin-table td[colspan]::before { display: none; }
+  .admin-row-actions { justify-content: flex-start; }
+}
 .action-column-header { background: #e8ede8; color: #263d30; }
 .action-column-cell { border-left: 1px solid #e2e7e2; background: white; }
 </style>

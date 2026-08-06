@@ -29,6 +29,13 @@ async function request(endpoint, options = {}) {
   const data = await response.json();
 
   if (!response.ok) {
+    // Token cũ/hết hạn (thường xảy ra sau khi đổi JWT_SECRET): xóa phiên và yêu cầu đăng nhập lại.
+    if (response.status === 401 && token && endpoint !== '/auth/login') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      const redirect = `${window.location.pathname}${window.location.search}`;
+      window.location.assign(`/login?expired=1&redirect=${encodeURIComponent(redirect)}`);
+    }
     throw new Error(data.message || 'Có lỗi xảy ra khi gọi API');
   }
 

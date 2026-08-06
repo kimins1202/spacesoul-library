@@ -35,7 +35,7 @@
     <div v-else-if="errorMsg" class="flex-1 flex items-center justify-center text-red-500 text-sm font-medium py-16">{{ errorMsg }}</div>
 
     <!-- Table -->
-    <div v-else class="overflow-x-auto flex-1">
+    <div v-else class="admin-table-wrap overflow-x-auto flex-1">
       <table class="borrow-table w-full text-left border-collapse min-w-[950px]">
         <colgroup>
           <col class="reader-col">
@@ -84,12 +84,12 @@
                 </div>
                 <div class="min-w-0">
                   <p class="font-bold text-gray-700 line-clamp-2">{{ borrow.book?.title || 'Sách không còn trong hệ thống' }}</p>
-                  <p class="text-[11px] text-gray-500 truncate">{{ borrow.book?.author || 'Không xác định' }}</p>
+                  <p class="text-[11px] text-gray-500 truncate">{{ borrow.book?.author || 'Không xác định' }} · {{ borrow.quantity || 1 }} quyển</p>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 text-xs font-medium text-gray-800">
-              {{ borrow.book?.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(borrow.book.price) : '—' }}
+              {{ borrow.book?.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(borrow.book.price * (borrow.quantity || 1)) : '—' }}
             </td>
             <td class="px-6 py-4 text-gray-600 font-medium text-xs">
               {{ borrow.borrowDate ? new Date(borrow.borrowDate).toLocaleDateString('vi-VN') : '—' }}
@@ -351,6 +351,29 @@ onMounted(loadBorrows)
   .admin-row-actions {
     opacity: 1;
   }
+}
+
+@media (max-width: 767px) {
+  .admin-table-wrap { overflow: visible; padding: 10px; background: #f4f6f2; }
+  .borrow-table { min-width: 0; display: block; table-layout: auto; }
+  .borrow-table colgroup, .borrow-table thead { display: none; }
+  .borrow-table tbody { display: grid; gap: 12px; }
+  .borrow-table tr { display: block; overflow: hidden; border: 1px solid #dfe5de; border-radius: 14px; background: #fff; box-shadow: 0 5px 16px rgba(25,48,34,.05); }
+  .borrow-table td { width: 100% !important; min-width: 0 !important; max-width: none !important; padding: 10px 13px; display: grid; grid-template-columns: 96px minmax(0,1fr); align-items: center; gap: 10px; border: 0; border-bottom: 1px solid #edf0eb; background: transparent; text-align: left !important; }
+  .borrow-table td::before { color: #7b877e; font-size: .62rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+  .borrow-table td:nth-child(1)::before { content: "Độc giả"; }
+  .borrow-table td:nth-child(2)::before { content: "Sách"; }
+  .borrow-table td:nth-child(3)::before { content: "Tổng phí"; }
+  .borrow-table td:nth-child(4)::before { content: "Ngày mượn"; }
+  .borrow-table td:nth-child(5)::before { content: "Hạn trả"; }
+  .borrow-table td:nth-child(6)::before { content: "Trạng thái"; }
+  .borrow-table td:nth-child(7)::before { content: "Thao tác"; }
+  .borrow-table td:last-child { border-bottom: 0; }
+  .borrow-table td[colspan] { display: block; padding: 28px 14px; text-align: center !important; }
+  .borrow-table td[colspan]::before { display: none; }
+  .borrow-table td .status, .borrow-table td > span { margin: 0; }
+  .admin-row-actions { justify-content: flex-start; }
+  .panel-toolbar, .border-b.bg-white > .p-6 { padding-right: 14px; padding-left: 14px; }
 }
 .hide-scrollbar {
   -ms-overflow-style: none;

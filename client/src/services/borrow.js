@@ -18,7 +18,7 @@ export const borrowService = {
     return await api.get('/borrows/myborrows');
   },
 
-  // Hủy yêu cầu mượn (User hoặc Admin từ chối)
+  // Quản trị viên từ chối yêu cầu mượn
   async cancelBorrowRequest(id) {
     return await api.put(`/borrows/${id}/cancel`, {});
   },
@@ -34,7 +34,11 @@ export const borrowService = {
   },
 
   // Trả sách trực tiếp (User)
-  async returnBook(id) {
-    return await api.put(`/borrows/${id}/return`, {});
+  async requestBookReturn(id) {
+    return await api.put(`/borrows/${id}/request-return`, {});
+  },
+
+  async confirmBookReturn(id) {
+    return await api.put(`/borrows/${id}/confirm-return`, {});
   }
 };

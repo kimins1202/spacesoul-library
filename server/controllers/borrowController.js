@@ -160,8 +160,8 @@ const approveBorrowRequest = async (req, res) => {
   }
 };
 
-// Độc giả trả sách trực tiếp, không cần bước xác nhận thêm.
-const returnBook = async (req, res) => {
+// Độc giả gửi yêu cầu trả; tồn kho chỉ được cập nhật sau khi quản trị viên nhận sách.
+const requestBookReturn = async (req, res) => {
   try {
     if (!isValidId(req.params.id)) {
       return res.status(400).json({ message: "Mã yêu cầu không hợp lệ" });
@@ -175,10 +175,33 @@ const returnBook = async (req, res) => {
       return res.status(403).json({ message: "Bạn không có quyền trả phiếu mượn này" });
     }
     // Kiểm tra trạng thái yêu cầu mượn
-    if (!["borrowing", "overdue", "pending-return"].includes(borrow.status)) {
+    if (!["borrowing", "overdue"].includes(borrow.status)) {
       return res
         .status(400)
         .json({ message: "Yêu cầu mượn không ở trạng thái đang mượn" });
+    }
+
+    borrow.status = "pending-return";
+    borrow.returnRequestedAt = new Date();
+    await borrow.save();
+
+    res.status(200).json({ message: "Đã gửi yêu cầu trả sách", borrow });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const confirmBookReturn = async (req, res) => {
+  try {
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: "Mã yêu cầu không hợp lệ" });
+    }
+    const borrow = await Borrow.findById(req.params.id);
+    if (!borrow) {
+      return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
+    }
+    if (borrow.status !== "pending-return") {
+      return res.status(400).json({ message: "Phiếu mượn chưa có yêu cầu trả đang chờ xác nhận" });
     }
 
     const shouldRestoreCopy = borrow.copyReserved;
@@ -194,13 +217,13 @@ const returnBook = async (req, res) => {
       );
     }
 
-    res.json(borrow);
+    res.status(200).json({ message: "Đã xác nhận nhận lại sách", borrow });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Hủy yêu cầu mượn sách (Chỉ dành cho người dùng)
+// Quản trị viên từ chối yêu cầu mượn đang chờ duyệt.
 const cancelBorrowRequest = async (req, res) => {
   try {
     if (!isValidId(req.params.id)) {
@@ -209,11 +232,6 @@ const cancelBorrowRequest = async (req, res) => {
     const borrow = await Borrow.findById(req.params.id);
     if (!borrow) {
       return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
-    }
-    const isOwner = req.userType === "Reader" && borrow.reader.toString() === req.user._id.toString();
-    const isAdmin = req.userType === "Admin";
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({ message: "Bạn không có quyền hủy yêu cầu này" });
     }
     // Kiểm tra trạng thái yêu cầu mượn
     if (borrow.status !== "pending") {
@@ -244,6 +262,7 @@ module.exports = {
   getMyBorrows,
   getAllBorrows,
   approveBorrowRequest,
-  returnBook,
+  requestBookReturn,
+  confirmBookReturn,
   cancelBorrowRequest,
 };

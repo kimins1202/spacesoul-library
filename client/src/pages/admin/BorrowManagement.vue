@@ -112,7 +112,10 @@
                 <button v-if="borrow.status === 'pending'" @click="handleCancel(borrow._id)" class="action-button reject" title="Từ chối" aria-label="Từ chối yêu cầu">
                   <X class="w-4 h-4" />
                 </button>
-                <span v-if="borrow.status !== 'pending'" class="processed-label" title="Đã xử lý" aria-label="Đã xử lý">
+                <button v-if="borrow.status === 'pending-return'" @click="handleConfirmReturn(borrow._id)" class="action-button approve" title="Xác nhận đã nhận sách" aria-label="Xác nhận đã nhận sách">
+                  <Undo2 class="w-4 h-4" />
+                </button>
+                <span v-if="!['pending', 'pending-return'].includes(borrow.status)" class="processed-label" title="Đã xử lý" aria-label="Đã xử lý">
                   <CheckCircle2 class="w-4 h-4" />
                 </span>
               </div>
@@ -137,6 +140,7 @@ import {
   Check,
   X,
   CheckCircle2,
+  Undo2,
   Loader2
 } from 'lucide-vue-next'
 import { borrowService } from '@/services/borrow'
@@ -155,8 +159,8 @@ const tabs = [
   { value: 'all', label: 'Tất cả phiếu mượn', badgeClass: 'bg-gray-100 text-gray-700' },
   { value: 'pending', label: 'Chờ duyệt', badgeClass: 'bg-yellow-100 text-yellow-700' },
   { value: 'borrowing', label: 'Đang mượn', badgeClass: 'bg-blue-100 text-blue-700' },
-  { value: 'pending-return', label: 'Chờ trả', badgeClass: 'bg-purple-100 text-purple-700' },
   { value: 'overdue', label: 'Quá hạn', badgeClass: 'bg-red-100 text-red-700' },
+  { value: 'pending-return', label: 'Yêu cầu trả', badgeClass: 'bg-purple-100 text-purple-700' },
   { value: 'returned', label: 'Đã trả', badgeClass: 'bg-gray-100 text-gray-600' },
 ]
 
@@ -189,7 +193,7 @@ watch(() => filteredBorrows.value.length, (total) => {
 })
 
 const statusLabel = (status) => {
-  const map = { pending: 'Chờ duyệt', borrowing: 'Đang mượn', 'pending-return': 'Chờ trả', returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy' }
+  const map = { pending: 'Chờ duyệt', borrowing: 'Đang mượn', 'pending-return': 'Chờ nhận lại', returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy' }
   return map[status] || status
 }
 const statusStyle = (status) => {
@@ -231,6 +235,16 @@ const handleCancel = async (id) => {
     await borrowService.cancelBorrowRequest(id)
     const b = borrows.value.find(x => x._id === id)
     if (b) b.status = 'cancelled'
+    window.dispatchEvent(new CustomEvent('borrow-status-changed'))
+  } catch (err) { alert(err.message) }
+}
+
+const handleConfirmReturn = async (id) => {
+  if (!confirm('Xác nhận thư viện đã nhận lại sách này?')) return
+  try {
+    const response = await borrowService.confirmBookReturn(id)
+    const index = borrows.value.findIndex(x => x._id === id)
+    if (index !== -1) borrows.value[index] = { ...borrows.value[index], ...response.borrow }
     window.dispatchEvent(new CustomEvent('borrow-status-changed'))
   } catch (err) { alert(err.message) }
 }

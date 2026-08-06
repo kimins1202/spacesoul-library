@@ -1,0 +1,56 @@
+<mxfile host="app.diagrams.net" modified="2026-08-04T00:00:00.000Z" agent="Codex" version="26.0.9" type="device">
+  <diagram id="spacesoul-class-diagram" name="Sơ đồ lớp">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="SƠ ĐỒ LỚP — SPACESOUL LIBRARY" style="text;html=1;align=center;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#173B2B;" vertex="1" parent="1">
+          <mxGeometry x="410" y="30" width="700" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin" value="&lt;div style=&quot;background:#173B2B;color:white;padding:10px;font-size:16px;font-weight:bold;text-align:center;&quot;&gt;QUẢN TRỊ VIÊN&lt;/div&gt;&lt;div style=&quot;padding:10px;line-height:1.65;&quot;&gt;+ _id: ObjectId&lt;br&gt;+ lastName: String&lt;br&gt;+ firstName: String&lt;br&gt;+ email: String&lt;br&gt;+ password: String&lt;br&gt;+ phone: String&lt;br&gt;+ address: String&lt;br&gt;+ role: String = admin&lt;br&gt;+ createdAt: Date&lt;br&gt;+ updatedAt: Date&lt;hr&gt;+ matchPassword(password): Boolean&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#173B2B;strokeWidth=2;fillColor=#FFFFFF;align=left;verticalAlign=top;spacing=0;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="120" width="280" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="reader" value="&lt;div style=&quot;background:#28533D;color:white;padding:10px;font-size:16px;font-weight:bold;text-align:center;&quot;&gt;ĐỘC GIẢ&lt;/div&gt;&lt;div style=&quot;padding:10px;line-height:1.65;&quot;&gt;+ _id: ObjectId&lt;br&gt;+ lastName: String&lt;br&gt;+ firstName: String&lt;br&gt;+ birthDate: Date&lt;br&gt;+ gender: String&lt;br&gt;+ email: String&lt;br&gt;+ password: String&lt;br&gt;+ phone: String&lt;br&gt;+ address: String&lt;br&gt;+ role: String = user&lt;br&gt;+ createdAt: Date&lt;br&gt;+ updatedAt: Date&lt;hr&gt;+ matchPassword(password): Boolean&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#28533D;strokeWidth=2;fillColor=#FFFFFF;align=left;verticalAlign=top;spacing=0;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="520" width="280" height="390" as="geometry" />
+        </mxCell>
+
+        <mxCell id="borrow" value="&lt;div style=&quot;background:#B27A2B;color:white;padding:10px;font-size:16px;font-weight:bold;text-align:center;&quot;&gt;PHIẾU MƯỢN&lt;/div&gt;&lt;div style=&quot;padding:10px;line-height:1.65;&quot;&gt;+ _id: ObjectId&lt;br&gt;+ reader: ObjectId [FK]&lt;br&gt;+ book: ObjectId [FK]&lt;br&gt;+ borrowDate: Date&lt;br&gt;+ dueDate: Date&lt;br&gt;+ returnDate: Date&lt;br&gt;+ status: String&lt;br&gt;+ copyReserved: Boolean&lt;br&gt;+ createdAt: Date&lt;br&gt;+ updatedAt: Date&lt;hr&gt;&lt;b&gt;status:&lt;/b&gt; pending | borrowing | returned | overdue | cancelled&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#B27A2B;strokeWidth=2;fillColor=#FFFFFF;align=left;verticalAlign=top;spacing=0;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="530" y="490" width="330" height="390" as="geometry" />
+        </mxCell>
+
+        <mxCell id="book" value="&lt;div style=&quot;background:#173B2B;color:white;padding:10px;font-size:16px;font-weight:bold;text-align:center;&quot;&gt;SÁCH&lt;/div&gt;&lt;div style=&quot;padding:10px;line-height:1.55;&quot;&gt;+ MaSach (_id): ObjectId&lt;br&gt;+ TenSach: String&lt;br&gt;+ TacGia: String&lt;br&gt;+ DonGia: Number&lt;br&gt;+ NamXuatBan: Number&lt;br&gt;+ MaNhaXuatBan: ObjectId [FK]&lt;br&gt;+ TheLoai: String&lt;br&gt;+ AnhBia: String&lt;br&gt;+ MoTa: String&lt;br&gt;+ TongSoQuyen: Number&lt;br&gt;+ SoQuyenKhaDung: Number&lt;br&gt;+ DanhGia: Number&lt;br&gt;+ ISBN: String&lt;br&gt;+ SoTrang: Number&lt;br&gt;+ NgonNgu: String&lt;br&gt;+ ViTriKe: String&lt;br&gt;+ NgayTao: Date&lt;br&gt;+ NgayCapNhat: Date&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#173B2B;strokeWidth=2;fillColor=#FFFFFF;align=left;verticalAlign=top;spacing=0;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="400" width="330" height="500" as="geometry" />
+        </mxCell>
+
+        <mxCell id="publisher" value="&lt;div style=&quot;background:#586B5D;color:white;padding:10px;font-size:16px;font-weight:bold;text-align:center;&quot;&gt;NHÀ XUẤT BẢN&lt;/div&gt;&lt;div style=&quot;padding:10px;line-height:1.65;&quot;&gt;+ _id: ObjectId&lt;br&gt;+ name: String&lt;br&gt;+ address: String&lt;br&gt;+ createdAt: Date&lt;br&gt;+ updatedAt: Date&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#586B5D;strokeWidth=2;fillColor=#FFFFFF;align=left;verticalAlign=top;spacing=0;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="120" width="270" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="reader-borrow" value="tạo / sở hữu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#28533D;strokeWidth=2;endArrow=none;startArrow=ERone;startFill=0;endFill=0;fontColor=#28533D;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="reader" target="borrow">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reader-one" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontStyle=1;resizable=0;points=[];" vertex="1" connectable="0" parent="reader-borrow"><mxGeometry x="-0.85" y="-1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="borrow-many-reader" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontStyle=1;resizable=0;points=[];" vertex="1" connectable="0" parent="reader-borrow"><mxGeometry x="0.85" y="-1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+
+        <mxCell id="book-borrow" value="được mượn trong" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#B27A2B;strokeWidth=2;endArrow=none;startArrow=none;labelBackgroundColor=#FFFFFF;fontColor=#8A5A1F;" edge="1" parent="1" source="borrow" target="book">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="borrow-many-book" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontStyle=1;resizable=0;points=[];" vertex="1" connectable="0" parent="book-borrow"><mxGeometry x="-0.85" y="-1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="book-one" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontStyle=1;resizable=0;points=[];" vertex="1" connectable="0" parent="book-borrow"><mxGeometry x="0.85" y="-1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+
+        <mxCell id="publisher-book" value="xuất bản" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#586B5D;strokeWidth=2;endArrow=none;startArrow=none;labelBackgroundColor=#FFFFFF;fontColor=#445248;" edge="1" parent="1" source="publisher" target="book">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="publisher-one" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontStyle=1;resizable=0;points=[];" vertex="1" connectable="0" parent="publisher-book"><mxGeometry x="-0.82" y="-1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+        <mxCell id="publisher-many" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontStyle=1;resizable=0;points=[];" vertex="1" connectable="0" parent="publisher-book"><mxGeometry x="0.82" y="-1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry></mxCell>
+
+        <mxCell id="admin-note" value="Quản trị viên quản lý sách, độc giả và duyệt phiếu mượn qua tầng controller; hiện không lưu khóa ngoại Admin trong Phiếu mượn." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#FFF8E8;strokeColor=#B27A2B;fontColor=#604719;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="390" y="150" width="460" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

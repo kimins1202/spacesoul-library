@@ -219,7 +219,7 @@ const faqs = [
   },
   {
     question: 'Tôi có thể hủy yêu cầu đã gửi không?',
-    answer: 'Bạn có thể hủy khi yêu cầu vẫn ở trạng thái chờ duyệt. Sau khi đã được duyệt, hãy liên hệ thư viện để được hỗ trợ.'
+    answer: 'Yêu cầu đã gửi không thể tự hủy. Vui lòng liên hệ thư viện nếu cần hỗ trợ.'
   },
   {
     question: 'Điều gì xảy ra khi sách bị quá hạn?',

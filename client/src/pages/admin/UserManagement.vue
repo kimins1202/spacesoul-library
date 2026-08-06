@@ -35,8 +35,10 @@
               <span>{{ reader.birthDate ? new Date(reader.birthDate).toLocaleDateString('vi-VN') : '—' }}</span><span v-if="reader.gender" class="ml-2 text-gray-400">· {{ reader.gender }}</span>
             </td>
             <td class="px-6 py-4 font-medium text-gray-600">{{ reader.phone || '—' }}</td>
-            <td class="action-column-cell px-5 py-4 text-center">
-              <button class="delete-action" title="Xóa độc giả" aria-label="Xóa độc giả" @click="handleDeleteReader(reader._id)"><Trash2 class="h-4 w-4" /></button>
+            <td class="action-column-cell px-5 py-4">
+              <div class="admin-row-actions flex items-center justify-center">
+                <button class="row-action delete-action" title="Xóa độc giả" aria-label="Xóa độc giả" @click="handleDeleteReader(reader._id)"><Trash2 class="h-4 w-4" /></button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -87,8 +89,10 @@ onMounted(loadReaders)
 </script>
 
 <style scoped>
-.delete-action { width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #84302c; border-radius: 9px; background: #a63d38; color: white; }
+.row-action { width: 32px; min-height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid; border-radius: 9px; font-size: 11px; font-weight: 800; white-space: nowrap; box-shadow: none; transition: background-color .2s ease; }
+.delete-action { border-color: #84302c; background: #a63d38; color: white; }
 .delete-action:hover { background: #84302c; }
+.admin-row-actions { min-width: 0; flex-wrap: nowrap; }
 .user-admin-table th, .user-admin-table td { vertical-align: middle; }
 .user-admin-table th { white-space: nowrap; }
 .user-admin-table th:last-child, .user-admin-table td:last-child { width: 112px; min-width: 112px; }

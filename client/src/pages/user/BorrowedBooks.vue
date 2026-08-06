@@ -76,11 +76,8 @@
             <div class="card-footer">
               <p>{{ statusDescription(borrow) }}</p>
               <div class="actions">
-                <button v-if="borrow.status === 'pending'" class="cancel" @click="handleCancel(borrow._id)">
-                  <X class="w-4 h-4" /> Hủy yêu cầu
-                </button>
-                <button v-if="['borrowing', 'overdue', 'pending-return'].includes(borrow.status)" class="return" @click="handleReturn(borrow._id)">
-                  <Undo2 class="w-4 h-4" /> Trả sách
+                <button v-if="['borrowing', 'overdue'].includes(borrow.status)" class="return" @click="handleReturn(borrow._id)">
+                  <Undo2 class="w-4 h-4" /> Gửi yêu cầu trả
                 </button>
                 <router-link v-if="borrow.book?._id" :to="`/books/${borrow.book._id}`">Xem chi tiết</router-link>
               </div>
@@ -100,7 +97,7 @@
 import { ref, computed, onMounted } from 'vue'
 import {
   AlertCircle, BookOpen, CheckCircle2, CircleDashed, ClipboardList, Clock3,
-  History, Loader2, PackageCheck, Plus, RefreshCw, Undo2, X
+  History, Loader2, PackageCheck, Plus, RefreshCw, Undo2
 } from 'lucide-vue-next'
 import { borrowService } from '@/services/borrow'
 import { categoryLabel } from '@/utils/categories'
@@ -117,8 +114,8 @@ const tabs = [
   { value: 'all', label: 'Tất cả' },
   { value: 'pending', label: 'Chờ duyệt' },
   { value: 'borrowing', label: 'Đang mượn' },
-  { value: 'pending-return', label: 'Chờ trả' },
   { value: 'overdue', label: 'Quá hạn' },
+  { value: 'pending-return', label: 'Chờ nhận lại' },
   { value: 'returned', label: 'Đã trả' }
 ]
 
@@ -147,19 +144,18 @@ const isOverdue = borrow => borrow.status === 'overdue' || (
 )
 const statusLabel = status => ({
   pending: 'Chờ duyệt', borrowing: 'Đang mượn', 'pending-return': 'Chờ xác nhận trả',
-  returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy'
+  returned: 'Đã trả', overdue: 'Quá hạn'
 }[status] || status)
 const statusIcon = status => ({
   pending: Clock3, borrowing: BookOpen, 'pending-return': Undo2,
-  returned: CheckCircle2, overdue: AlertCircle, cancelled: X
+  returned: CheckCircle2, overdue: AlertCircle
 }[status] || CircleDashed)
 const statusDescription = borrow => ({
   pending: 'Quản trị viên đang kiểm tra tình trạng sách và sẽ phản hồi yêu cầu của bạn.',
   borrowing: `Bạn đang giữ sách. Vui lòng hoàn trả trước ngày ${formatDate(borrow.dueDate)}.`,
-  'pending-return': 'Phiếu cũ đang chờ trả. Nhấn Trả sách để hoàn tất ngay.',
+  'pending-return': `Yêu cầu trả đã được gửi ngày ${formatDate(borrow.returnRequestedAt)}. Vui lòng mang sách đến thư viện để xác nhận.`,
   returned: `Sách đã được hoàn trả ngày ${formatDate(borrow.returnDate)}.`,
-  overdue: 'Sách đã quá hạn. Vui lòng trả sách và liên hệ thư viện sớm nhất.',
-  cancelled: 'Yêu cầu này đã được hủy và không còn hiệu lực.'
+  overdue: 'Sách đã quá hạn. Vui lòng trả sách và liên hệ thư viện sớm nhất.'
 }[borrow.status] || '')
 
 const showToast = message => {
@@ -173,7 +169,9 @@ const loadMyBorrows = async () => {
   errorMessage.value = ''
   try {
     const response = await borrowService.getMyBorrows()
-    myBorrows.value = Array.isArray(response) ? response : []
+    myBorrows.value = Array.isArray(response)
+      ? response.filter(item => item.status !== 'cancelled')
+      : []
   } catch (error) {
     errorMessage.value = error.message || 'Không thể kết nối đến máy chủ.'
   } finally {
@@ -181,24 +179,13 @@ const loadMyBorrows = async () => {
   }
 }
 
-const handleCancel = async id => {
-  if (!confirm('Bạn có chắc muốn hủy yêu cầu mượn này?')) return
-  try {
-    const updated = await borrowService.cancelBorrowRequest(id)
-    const index = myBorrows.value.findIndex(item => item._id === id)
-    if (index !== -1) myBorrows.value[index] = { ...myBorrows.value[index], ...updated }
-    showToast('Đã hủy yêu cầu mượn.')
-  } catch (error) {
-    alert(error.message)
-  }
-}
-
 const handleReturn = async id => {
   try {
-    const updated = await borrowService.returnBook(id)
+    const response = await borrowService.requestBookReturn(id)
+    const updated = response.borrow
     const index = myBorrows.value.findIndex(item => item._id === id)
     if (index !== -1) myBorrows.value[index] = { ...myBorrows.value[index], ...updated }
-    showToast('Đã trả sách thành công.')
+    showToast('Đã gửi yêu cầu trả sách.')
   } catch (error) {
     alert(error.message)
   }
@@ -241,7 +228,7 @@ onMounted(loadMyBorrows)
 .book-title-row h2 { margin: 4px 0 2px; font-size: 1.05rem; }
 .book-title-row p { color: #7b857e; font-size: .73rem; }
 .status { height: max-content; flex: 0 0 auto; padding: 6px 9px; display: flex; align-items: center; gap: 5px; border-radius: 99px; font-size: .61rem; font-weight: 800; }
-.status :deep(svg) { width: 13px; height: 13px; }.status-pending{background:#f7edd7;color:#956a23}.status-borrowing{background:#e2edf2;color:#386779}.status-pending-return{background:#ece6f2;color:#705283}.status-returned{background:#e5eee7;color:#2c6842}.status-overdue{background:#f5e2df;color:#a3453c}.status-cancelled{background:#ececea;color:#737a75}
+.status :deep(svg) { width: 13px; height: 13px; }.status-pending{background:#f7edd7;color:#956a23}.status-borrowing{background:#e2edf2;color:#386779}.status-pending-return{background:#eee7f6;color:#76549a}.status-returned{background:#e5eee7;color:#2c6842}.status-overdue{background:#f5e2df;color:#a3453c}
 .timeline { margin-top: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .timeline div { display: flex; flex-direction: column; gap: 2px; }
 .timeline span { color: #929991; font-size: .6rem; text-transform: uppercase; letter-spacing: .06em; }

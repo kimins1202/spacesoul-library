@@ -40,6 +40,10 @@ const borrowSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    returnRequestedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

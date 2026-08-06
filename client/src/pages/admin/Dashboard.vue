@@ -131,7 +131,6 @@
                   'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold',
                   borrow.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                   borrow.status === 'borrowing' ? 'bg-blue-100 text-blue-700' :
-                  borrow.status === 'pending-return' ? 'bg-purple-100 text-purple-700' :
                   borrow.status === 'returned' ? 'bg-gray-100 text-gray-700' :
                   borrow.status === 'overdue' ? 'bg-red-100 text-red-700' :
                   'bg-gray-100 text-gray-500'
@@ -162,7 +161,7 @@ const currentAdmin = authService.getCurrentUser()
 const adminDisplayName = currentAdmin?.firstName || 'Quản trị viên'
 
 const statusLabel = (status) => {
-  const map = { pending: 'Chờ duyệt', borrowing: 'Đang mượn', 'pending-return': 'Chờ trả', returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy' }
+  const map = { pending: 'Chờ duyệt', borrowing: 'Đang mượn', returned: 'Đã trả', overdue: 'Quá hạn', cancelled: 'Đã hủy' }
   return map[status] || status
 }
 
@@ -188,7 +187,7 @@ const chartData = computed(() => ({
   }]
 }))
 
-const statusKeys = ['pending', 'borrowing', 'pending-return', 'overdue', 'returned', 'cancelled']
+const statusKeys = ['pending', 'borrowing', 'overdue', 'returned', 'cancelled']
 const statusChartData = computed(() => ({
   labels: statusKeys.map(statusLabel),
   datasets: [{
